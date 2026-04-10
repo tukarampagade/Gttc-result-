@@ -1,0 +1,5 @@
+{
+  "name": "GTTC Provisional Result med by Tukaram",
+  "description": "A production-grade result management system for GTTC with student and admin portals, PDF result parsing, and audit logging.",
+  "requestFramePermissions": []
+}

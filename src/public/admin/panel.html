@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - GTTC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/assets/css/themes.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --sidebar-width: 260px;
+        }
+        body {
+            background-color: #f8fafc !important;
+        }
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #0f172a;
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.7) !important;
+            padding: 0.6rem 1.2rem !important;
+            margin: 0.2rem 0.8rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+        .nav-link i {
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+        .nav-link:hover {
+            background: rgba(255,255,255,0.05);
+            color: white !important;
+        }
+        .nav-link.active {
+            background: #2563eb !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+        .stat-card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            height: 100%;
+        }
+        .table-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .table thead th {
+            background: #f8fafc;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            border-top: none;
+            padding: 1rem;
+        }
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+        .badge-active { background: #dcfce7; color: #166534; }
+        .badge-pass { background: #dcfce7; color: #166534; }
+        .badge-fail { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="p-4 mb-4">
+            <div class="d-flex align-items-center gap-2">
+                <div class="bg-primary rounded p-2">
+                    <i class="bi bi-mortarboard-fill text-white"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0">ResultPro</h6>
+                    <small class="text-muted" style="font-size: 0.6rem;">MANAGEMENT SYSTEM</small>
+                </div>
+            </div>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+            <a class="nav-link" href="#" onclick="showSection('students')">
+                <i class="bi bi-people-fill"></i> Students
+            </a>
+            <a class="nav-link" href="#" onclick="showSection('results')">
+                <i class="bi bi-file-earmark-text-fill"></i> Results
+            </a>
+            <a class="nav-link" href="#" onclick="showSection('history')">
+                <i class="bi bi-clock-history"></i> Result History
+            </a>
+            <a class="nav-link" href="#" onclick="showSection('upload')">
+                <i class="bi bi-cloud-upload-fill"></i> CSV Upload
+            </a>
+            <a class="nav-link" href="#" onclick="showSection('audit')">
+                <i class="bi bi-journal-text"></i> Audit Logs
+            </a>
+        </nav>
+        <div class="mt-auto p-4">
+            <a class="nav-link text-danger" href="#" onclick="logout()">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- Dashboard Section -->
+        <div id="dashboardSection">
+            <div class="mb-4">
+                <h3 class="fw-bold">Dashboard</h3>
+                <p class="text-muted">Overview of academic performance and statistics</p>
+            </div>
+            
+            <div class="row g-4 mb-4" id="analyticsCards">
+                <!-- Loaded via JS -->
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-lg-7">
+                    <div class="chart-container">
+                        <h6 class="fw-bold mb-4">Result Distribution</h6>
+                        <div style="height: 300px;">
+                            <canvas id="resultDistChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="chart-container">
+                        <h6 class="fw-bold mb-4">Grade Distribution</h6>
+                        <div style="height: 300px;">
+                            <canvas id="gradeDistChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container mb-4">
+                <h6 class="fw-bold mb-4">Department-wise Pass Rate (%)</h6>
+                <div style="height: 300px;">
+                    <canvas id="deptPassChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Students Section -->
+        <div id="studentsSection" style="display:none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold">Manage Students</h3>
+                    <p class="text-muted" id="studentCountText">0 total students</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-light border" onclick="loadStudents()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                        <i class="bi bi-plus-lg"></i> Add Student
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="p-3 border-bottom d-flex gap-3">
+                    <div class="input-group" style="max-width: 400px;">
+                        <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" id="studentSearch" class="form-control border-start-0" placeholder="Search by roll number, name..." onkeyup="filterStudents()">
+                    </div>
+                    <div style="min-width: 200px;">
+                        <select id="deptFilter" class="form-select" onchange="filterStudents()">
+                            <option value="">All Departments</option>
+                            <option value="Artificial Intelligence">Artificial Intelligence</option>
+                            <option value="Mechanical Engineering">Mechanical Engineering</option>
+                            <option value="Mechatronics">Mechatronics</option>
+                            <option value="Tool & Die Making">Tool & Die Making</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Roll No.</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Semester</th>
+                                <th>DOB</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="p-3 border-top d-flex justify-content-center">
+                    <ul class="pagination pagination-sm mb-0" id="studentPagination"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" style="display:none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold">Manage Results</h3>
+                    <p class="text-muted" id="resultCountText">0 total results</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-light border" onclick="loadResults()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                    <button class="btn btn-success" onclick="exportResultsToCSV()">
+                        <i class="bi bi-download"></i> Export CSV
+                    </button>
+                    <button class="btn btn-primary" onclick="showSection('upload')">
+                        <i class="bi bi-plus-lg"></i> Add Result
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="p-3 border-bottom">
+                    <div class="input-group" style="max-width: 400px;">
+                        <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" id="resultSearch" class="form-control border-start-0" placeholder="Search by roll number, name, subject..." onkeyup="filterResults()">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Roll No.</th>
+                                <th>Student</th>
+                                <th>Semester</th>
+                                <th>Marks</th>
+                                <th>Grade</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="p-3 border-top d-flex justify-content-center">
+                    <ul class="pagination pagination-sm mb-0" id="resultPagination"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result History Section -->
+        <div id="historySection" style="display:none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold">Result Update History</h3>
+                    <p class="text-muted">Audit trail for all result additions and modifications</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-light border" onclick="loadResultHistory()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                    <button class="btn btn-success" onclick="exportHistoryToCSV()">
+                        <i class="bi bi-download"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="p-3 border-bottom">
+                    <div class="input-group" style="max-width: 400px;">
+                        <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" id="historySearch" class="form-control border-start-0" placeholder="Search by roll number or admin..." onkeyup="filterHistory()">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Roll No.</th>
+                                <th>Action</th>
+                                <th>Performed By</th>
+                                <th>Details</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="p-3 border-top d-flex justify-content-center">
+                    <ul class="pagination pagination-sm mb-0" id="historyPagination"></ul>
+                </div>
+            </div>
+        </div>
+
+                <div id="auditSection" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="fw-bold">Audit Logs</h2>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="loadAuditLogs()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="auditTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="sortable-header" onclick="sortAudit('action')">
+                                                Action <i class="bi bi-arrow-down-up sort-icon"></i>
+                                            </th>
+                                            <th class="sortable-header" onclick="sortAudit('user')">
+                                                User <i class="bi bi-arrow-down-up sort-icon"></i>
+                                            </th>
+                                            <th>Details</th>
+                                            <th class="sortable-header" onclick="sortAudit('timestamp')">
+                                                Timestamp <i class="bi bi-arrow-down-up sort-icon"></i>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="auditTableBody">
+                                        <!-- Audit logs will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <nav aria-label="Audit pagination" class="mt-4">
+                                <ul class="pagination justify-content-center" id="auditPagination">
+                                    <!-- Pagination will be loaded here -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div class="modal fade" id="addStudentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Student</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addStudentForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Register Number</label>
+                                <input type="text" class="form-control" id="newRegNo" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="newName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="newEmail">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Department</label>
+                                <select class="form-select" id="newDepartment">
+                                    <option value="Artificial Intelligence">Artificial Intelligence</option>
+                                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                    <option value="Mechatronics">Mechatronics</option>
+                                    <option value="Tool & Die Making">Tool & Die Making</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Semester</label>
+                                <input type="number" class="form-control" id="newSemester" value="1">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">DOB</label>
+                                <input type="date" class="form-control" id="newDob">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" id="newStatus">
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-4">Save Student</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Student Modal -->
+    <div class="modal fade" id="editStudentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Student Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editStudentForm">
+                        <input type="hidden" id="editRegNoHidden">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Register Number (Read-only)</label>
+                                <input type="text" class="form-control" id="editRegNo" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="editName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="editEmail">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Department</label>
+                                <select class="form-select" id="editDepartment">
+                                    <option value="Artificial Intelligence">Artificial Intelligence</option>
+                                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                    <option value="Mechatronics">Mechatronics</option>
+                                    <option value="Tool & Die Making">Tool & Die Making</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Semester</label>
+                                <input type="number" class="form-control" id="editSemester">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">DOB</label>
+                                <input type="date" class="form-control" id="editDob">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" id="editStatus">
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-4">Update Student</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Result Modal -->
+    <div class="modal fade" id="editResultModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Student Result</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editResultForm">
+                        <input type="hidden" id="editResultRegNo">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label">Semester</label>
+                                <select class="form-select" id="res_semester" required>
+                                    <option value="1">1st Semester</option>
+                                    <option value="2">2nd Semester</option>
+                                    <option value="3">3rd Semester</option>
+                                    <option value="4">4th Semester</option>
+                                    <option value="5">5th Semester</option>
+                                    <option value="6">6th Semester</option>
+                                    <option value="7">7th Semester</option>
+                                    <option value="8">8th Semester</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">EM for AI (24AI31T)</label>
+                                <input type="number" class="form-control" id="res_subject1" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">PY. Programming (24AI32T)</label>
+                                <input type="number" class="form-control" id="res_subject2" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">OOPS with C++ (24AI33T)</label>
+                                <input type="number" class="form-control" id="res_subject3" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Intro. to MC & ES (24AI34T)</label>
+                                <input type="number" class="form-control" id="res_subject4" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">C++ Lab (24AI35P)</label>
+                                <input type="number" class="form-control" id="res_subject5" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">PY. Programming Lab (24AI36P)</label>
+                                <input type="number" class="form-control" id="res_subject6" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Microcontroller Lab (24AI37P)</label>
+                                <input type="number" class="form-control" id="res_subject7" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">DBMS (24AI38P)</label>
+                                <input type="number" class="form-control" id="res_subject8" required>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-3 bg-light rounded">
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <div class="small text-muted">Total Marks</div>
+                                    <div class="h4 mb-0 fw-bold" id="res_total_display">0</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="small text-muted">Result Status</div>
+                                    <div class="h4 mb-0 fw-bold" id="res_status_display">-</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary w-100">Update Result</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <i class="bi bi-exclamation-triangle text-danger fs-1 mb-3"></i>
+                    <h5 class="mb-3">Confirm Deletion</h5>
+                    <p class="text-muted small">Are you sure you want to delete student <strong id="deleteRegNoText"></strong>? This action cannot be undone.</p>
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="button" class="btn btn-light w-100" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger w-100" id="confirmDeleteBtn">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Result Modal -->
+    <div class="modal fade" id="viewResultModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Student Result View</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalResultContent">
+                    <!-- Result will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Confirmation Modal -->
+    <div class="modal fade" id="genericConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="genericConfirmTitle">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="genericConfirmMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="genericConfirmBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/admin.js"></script>
+    <footer class="main-content py-4 mt-auto border-top bg-white">
+        <div class="container-fluid d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div class="text-muted small">
+                © 2026 GTTC Belgaum — Result Management System, and created by Tukaram Pagade
+            </div>
+            <div class="text-muted small fw-bold text-uppercase tracking-wider">
+                Admin Portal
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

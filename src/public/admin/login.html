@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - GTTC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/assets/css/themes.css">
+</head>
+<body>
+    <div class="bg-dark py-2 text-white small text-center fw-bold text-uppercase tracking-widest">
+        Government Tool Room & Training Centre, Karnataka
+    </div>
+    <div class="container d-flex align-items-center justify-content-center min-vh-100">
+        <div class="card login-card w-100 shadow-lg border-0">
+            <div class="card-body p-5">
+                <div class="text-center mb-5">
+                    <div class="mb-3">
+                        <img src="https://picsum.photos/seed/gttc-official/200/200" alt="GTTC Logo" class="img-fluid mb-3" style="max-height: 80px; filter: grayscale(100%) contrast(200%);" referrerPolicy="no-referrer">
+                    </div>
+                    <h2 class="fw-bold text-uppercase tracking-wider mb-1">Government Tool Room & Training Centre</h2>
+                    <p class="text-muted small">Administrative Access Portal</p>
+                    <hr class="mx-auto w-25">
+                </div>
+                <form id="adminLoginForm">
+                    <div class="mb-4">
+                        <label class="form-label text-uppercase small fw-bold text-muted">Administrator Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope"></i></span>
+                            <input type="email" class="form-control border-start-0 ps-0" id="username" placeholder="admin@gttc.gov.in" required>
+                        </div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="form-label text-uppercase small fw-bold text-muted">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-key"></i></span>
+                            <input type="password" class="form-control border-start-0 ps-0" id="password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-dark w-100 py-3 fw-bold text-uppercase tracking-wide mb-4">
+                        Authenticate <i class="bi bi-box-arrow-in-right ms-2"></i>
+                    </button>
+                    <div class="text-center">
+                        <a href="/" class="text-decoration-none text-muted small hover-primary">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Student Portal
+                        </a>
+                    </div>
+                </form>
+                <div id="message" class="mt-4 text-center"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="container-fluid py-4 mt-auto border-top bg-white">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div class="text-muted small">
+                © 2026 GTTC Belgaum — Result Management System created by Tukaram Pagade
+            </div>
+            <div class="text-muted small fw-bold text-uppercase tracking-wider">
+                Admin Portal
+            </div>
+        </div>
+    </footer>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+</body>
+</html>

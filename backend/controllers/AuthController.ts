@@ -5,7 +5,7 @@ import { ApiResponse } from '../util/ApiResponse.js';
 export class AuthController {
   static async login(req: Request, res: Response) {
     const { username, password, regNo, email } = req.body;
-    const loginId = username || regNo || email;
+    const loginId = (username || regNo || email)?.toString().trim();
 
     if (!loginId || !password) {
       return res.status(400).json(ApiResponse.error('Username/RegNo/Email and password are required'));

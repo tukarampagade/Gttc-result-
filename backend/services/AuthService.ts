@@ -9,15 +9,16 @@ import { generateToken } from '../util/JwtUtil.js';
 
 export class AuthService {
   static async studentLogin(regNo: string, passwordInput: string) {
-    console.log(`Attempting student login for regNo: ${regNo}`);
-    const student: any = StudentRepository.findByRegNo(regNo);
+    const trimmedRegNo = regNo.trim();
+    console.log(`Attempting student login for regNo: ${trimmedRegNo}`);
+    const student: any = StudentRepository.findByRegNo(trimmedRegNo);
     if (!student) {
-      console.log(`Student with regNo ${regNo} not found`);
+      console.log(`Student with regNo ${trimmedRegNo} not found`);
       return null;
     }
 
-    // Password is case-insensitive, stored as lowercase hashed
-    const lowerPassword = passwordInput.toLowerCase();
+    // Password is case-insensitive, stored as lowercase hashed, and normalized spaces
+    const lowerPassword = passwordInput.trim().toLowerCase().replace(/\s+/g, ' ');
     console.log(`Comparing password for ${regNo}`);
     const isValid = await bcrypt.compare(lowerPassword, student.password);
     console.log(`Password valid for ${regNo}: ${isValid}`);
@@ -145,7 +146,7 @@ export class AuthService {
     ];
 
     for (const s of pdfStudents) {
-      const password = await bcrypt.hash(s.name.toLowerCase(), 10);
+      const password = await bcrypt.hash(s.name.trim().toLowerCase().replace(/\s+/g, ' '), 10);
       StudentRepository.save({
         regNo: s.regNo,
         name: s.name,

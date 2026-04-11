@@ -10,33 +10,35 @@ import { StudentRepository, AuditRepository } from '../repositories/repositories
 export class PdfService {
   static async parseAndStore(buffer: Buffer, adminEmail: string) {
     const data = await pdf(buffer);
-    const text = data.text;
+    const text = data.text as string;
 
-    // Global regex to find all student records regardless of line breaks
-    // 1. RegNo: 5 or more digits
-    // 2. Name: Letters, spaces, dots, hyphens
-    // 3. Marks: 8 sets of 1-3 digits
-    // 4. Total: 1-4 digits
-    // 5. Result: PASS or FAIL
-    const recordRegex = /(\d{5,})\s+([A-Za-z\s\.\-\']+?)\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,4})\s+(PASS|FAIL)/gi;
+    // Improved regex to match: SlNo RegNo Name FatherName [IA E T]x8 Total Result
+    // Handles 'AB' for absent and flexible whitespace
+    const recordRegex = /(\d{1,3})\s+(\d{7})\s+([A-Z\s\.\-\']+?)\s+([A-Z\s\.\-\']+?)\s+((?:(?:(?:\d{1,3}|AB)\s+){3}){8})(\d{1,4})\s+(PASS|FAIL)/gi;
     
     const matches = Array.from(text.matchAll(recordRegex));
     const results: any[] = [];
 
     for (const match of matches) {
       try {
-        const m = match as unknown as string[];
-        const [_, regNo, name, s1, s2, s3, s4, s5, s6, s7, s8, total, resultStatus] = m;
+        const [_, slNo, regNo, name, fatherName, marksText, total, resultStatus] = match;
         const trimmedName = name.trim();
-        const upperResult = resultStatus.toUpperCase();
+        
+        // Parse marks: split by whitespace and filter out empty strings
+        const allMarks = marksText.trim().split(/\s+/).map(m => m.toUpperCase() === 'AB' ? 0 : parseInt(m));
+        
+        // allMarks should have 24 values (IA, E, T for 8 subjects)
+        const subjectData: any = {
+          regNo,
+          semester: 3, // Default for this format
+        };
 
-        // Basic validation: total should be sum of marks
-        const marks = [
-          parseInt(s1), parseInt(s2), parseInt(s3), parseInt(s4), 
-          parseInt(s5), parseInt(s6), parseInt(s7), parseInt(s8)
-        ];
-        const calculatedTotal = marks.reduce((a, b) => a + b, 0);
-        const parsedTotal = parseInt(total);
+        for (let i = 0; i < 8; i++) {
+          const baseIdx = i * 3;
+          subjectData[`subject${i+1}_ia`] = allMarks[baseIdx];
+          subjectData[`subject${i+1}_e`] = allMarks[baseIdx + 1];
+          // subjectData[`subject${i+1}_t`] = allMarks[baseIdx + 2]; // Calculated by ResultService
+        }
 
         // Ensure student exists
         let student: any = StudentRepository.findByRegNo(regNo);
@@ -46,23 +48,10 @@ export class PdfService {
           StudentRepository.save({ regNo, name: trimmedName, password: hashedPassword });
         }
 
-        const resultData = {
-          regNo,
-          semester: 3, // Default for this PDF
-          subject1_ia: 40, subject1_e: marks[0] - 40 > 0 ? marks[0] - 40 : 0,
-          subject2_ia: 40, subject2_e: marks[1] - 40 > 0 ? marks[1] - 40 : 0,
-          subject3_ia: 40, subject3_e: marks[2] - 40 > 0 ? marks[2] - 40 : 0,
-          subject4_ia: 40, subject4_e: marks[3] - 40 > 0 ? marks[3] - 40 : 0,
-          subject5_ia: 40, subject5_e: marks[4] - 40 > 0 ? marks[4] - 40 : 0,
-          subject6_ia: 40, subject6_e: marks[5] - 40 > 0 ? marks[5] - 40 : 0,
-          subject7_ia: 40, subject7_e: marks[6] - 40 > 0 ? marks[6] - 40 : 0,
-          subject8_ia: 40, subject8_e: marks[7] - 40 > 0 ? marks[7] - 40 : 0,
-        };
-
-        ResultService.saveResult(resultData, adminEmail);
-        results.push(resultData);
+        ResultService.saveResult(subjectData, adminEmail);
+        results.push(subjectData);
       } catch (error) {
-        console.error(`Error processing match: ${match[0]}`, error);
+        console.error(`Error processing match in PDF:`, error);
       }
     }
 

@@ -439,6 +439,9 @@ function renderResultTable(pagination) {
                         <button class="btn btn-sm btn-primary" onclick="viewStudentResult('${r.regNo}', ${r.semester || 3})">
                             <i class="bi bi-eye me-1"></i> View Details
                         </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="showSubjectAnalysis('${r.regNo}', ${r.semester || 3})">
+                            <i class="bi bi-bar-chart-line me-1"></i> Analysis
+                        </button>
                         <button class="btn btn-sm btn-light border" onclick="openEditResultModal('${r.regNo}', ${r.semester || 3})" title="Edit">
                             <i class="bi bi-pencil"></i>
                         </button>
@@ -684,6 +687,105 @@ document.getElementById('confirmDeleteBtn')?.addEventListener('click', async () 
         showToast(err.message, 'danger');
     }
 });
+
+async function showSubjectAnalysis(regNo, semester) {
+    const content = document.getElementById('analysisContent');
+    content.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
+    new bootstrap.Modal(document.getElementById('subjectAnalysisModal')).show();
+
+    try {
+        const endpoint = semester ? `/admin/result/${regNo}?semester=${semester}` : `/admin/result/${regNo}`;
+        const res = await request(endpoint);
+        const r = res.data;
+
+        if (!r) {
+            content.innerHTML = '<div class="alert alert-warning">No result found for this student.</div>';
+            return;
+        }
+
+        const subjects = [
+            { name: 'EM for AI', code: '24AI31T', ia: r.subject1_ia, e: r.subject1_e, t: r.subject1_t },
+            { name: 'PY. Programming', code: '24AI32T', ia: r.subject2_ia, e: r.subject2_e, t: r.subject2_t },
+            { name: 'OOPS with C++', code: '24AI33T', ia: r.subject3_ia, e: r.subject3_e, t: r.subject3_t },
+            { name: 'Intro. to MC & ES', code: '24AI34T', ia: r.subject4_ia, e: r.subject4_e, t: r.subject4_t },
+            { name: 'C++ Lab', code: '24AI35P', ia: r.subject5_ia, e: r.subject5_e, t: r.subject5_t },
+            { name: 'PY. Programming Lab', code: '24AI36P', ia: r.subject6_ia, e: r.subject6_e, t: r.subject6_t },
+            { name: 'Microcontroller Lab', code: '24AI37P', ia: r.subject7_ia, e: r.subject7_e, t: r.subject7_t },
+            { name: 'DBMS', code: '24AI38P', ia: r.subject8_ia, e: r.subject8_e, t: r.subject8_t }
+        ];
+
+        let html = `
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="card border-0 bg-light p-3 mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 class="fw-bold mb-0">${r.name}</h4>
+                                <p class="text-muted mb-0">Analysis for Semester ${r.semester}</p>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary px-3 py-2 fs-6">Total: ${r.total}/960</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        `;
+
+        subjects.forEach((s, idx) => {
+            const iaPass = s.ia >= 35;
+            const ePass = s.e >= 25;
+            const tPass = s.t >= 60;
+            
+            const iaPercent = (s.ia / 70) * 100;
+            const ePercent = (s.e / 50) * 100;
+
+            html += `
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm overflow-hidden">
+                        <div class="card-header bg-white border-0 py-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="x-small text-uppercase fw-bold text-muted">${s.code}</div>
+                                    <div class="fw-bold text-truncate" style="max-width: 150px;">${s.name}</div>
+                                </div>
+                                <span class="badge ${tPass ? 'bg-success' : 'bg-danger'} rounded-pill">${tPass ? 'PASS' : 'FAIL'}</span>
+                            </div>
+                        </div>
+                        <div class="card-body pt-0">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between x-small mb-1">
+                                    <span>IA (Min 35/70)</span>
+                                    <span class="fw-bold ${iaPass ? 'text-success' : 'text-danger'}">${s.ia}/70</span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar ${iaPass ? 'bg-success' : 'bg-danger'}" style="width: ${iaPercent}%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between x-small mb-1">
+                                    <span>Exam (Min 25/50)</span>
+                                    <span class="fw-bold ${ePass ? 'text-success' : 'text-danger'}">${s.e}/50</span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar ${ePass ? 'bg-success' : 'bg-danger'}" style="width: ${ePercent}%"></div>
+                                </div>
+                            </div>
+                            <div class="p-2 bg-light rounded text-center">
+                                <div class="x-small text-muted text-uppercase">Total Marks</div>
+                                <div class="h4 fw-bold mb-0 ${tPass ? 'text-dark' : 'text-danger'}">${s.t}/120</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+        content.innerHTML = html;
+    } catch (err) {
+        content.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+    }
+}
 
 async function viewStudentResult(regNo, semester) {
     const content = document.getElementById('modalResultContent');

@@ -23,6 +23,6 @@ export class AuthController {
       return res.json(ApiResponse.ok('Admin login successful', { token, role: 'ADMIN' }));
     }
 
-    res.status(401).json(ApiResponse.error('Invalid email or password. Please check your details and try again.'));
+    res.status(401).json(ApiResponse.error('Invalid Roll Number or Full Name. Please check your details and try again.'));
   }
 }

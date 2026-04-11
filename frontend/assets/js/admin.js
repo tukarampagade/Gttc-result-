@@ -436,8 +436,8 @@ function renderResultTable(pagination) {
                 <td><span class="badge badge-${r.result.toLowerCase()}">${r.result}</span></td>
                 <td>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-light border" onclick="viewStudentResult('${r.regNo}', ${r.semester || 3})" title="View">
-                            <i class="bi bi-eye"></i>
+                        <button class="btn btn-sm btn-primary" onclick="viewStudentResult('${r.regNo}', ${r.semester || 3})">
+                            <i class="bi bi-eye me-1"></i> View Details
                         </button>
                         <button class="btn btn-sm btn-light border" onclick="openEditResultModal('${r.regNo}', ${r.semester || 3})" title="Edit">
                             <i class="bi bi-pencil"></i>
@@ -701,14 +701,14 @@ async function viewStudentResult(regNo, semester) {
         }
 
         const subjects = [
-            { name: 'Advanced Math for AI', code: '24AI41T', ia: r.subject1_ia, e: r.subject1_e, marks: r.subject1_t, max: 120 },
-            { name: 'Data Warehousing', code: '24AI42T', ia: r.subject2_ia, e: r.subject2_e, marks: r.subject2_t, max: 120 },
-            { name: 'Machine Learning', code: '24AI43T', ia: r.subject3_ia, e: r.subject3_e, marks: r.subject3_t, max: 120 },
-            { name: 'Deep Learning', code: '24AI44T', ia: r.subject4_ia, e: r.subject4_e, marks: r.subject4_t, max: 120 },
-            { name: 'ML Lab', code: '24AI45P', ia: r.subject5_ia, e: r.subject5_e, marks: r.subject5_t, max: 120 },
-            { name: 'Data Science Lab', code: '24AI46P', ia: r.subject6_ia, e: r.subject6_e, marks: r.subject6_t, max: 120 },
-            { name: 'Deep Learning Lab', code: '24AI47P', ia: r.subject7_ia, e: r.subject7_e, marks: r.subject7_t, max: 120 },
-            { name: 'Mini Project', code: '24AI48P', ia: r.subject8_ia, e: r.subject8_e, marks: r.subject8_t, max: 120 }
+            { name: 'EM for AI', code: '24AI31T', ia: r.subject1_ia, e: r.subject1_e, marks: r.subject1_t, max: 120 },
+            { name: 'PY. Programming', code: '24AI32T', ia: r.subject2_ia, e: r.subject2_e, marks: r.subject2_t, max: 120 },
+            { name: 'OOPS with C++', code: '24AI33T', ia: r.subject3_ia, e: r.subject3_e, marks: r.subject3_t, max: 120 },
+            { name: 'Intro. to MC & ES', code: '24AI34T', ia: r.subject4_ia, e: r.subject4_e, marks: r.subject4_t, max: 120 },
+            { name: 'C++ Lab', code: '24AI35P', ia: r.subject5_ia, e: r.subject5_e, marks: r.subject5_t, max: 120 },
+            { name: 'PY. Programming Lab', code: '24AI36P', ia: r.subject6_ia, e: r.subject6_e, marks: r.subject6_t, max: 120 },
+            { name: 'Microcontroller Lab', code: '24AI37P', ia: r.subject7_ia, e: r.subject7_e, marks: r.subject7_t, max: 120 },
+            { name: 'DBMS', code: '24AI38P', ia: r.subject8_ia, e: r.subject8_e, marks: r.subject8_t, max: 120 }
         ];
 
         const getGrade = (marks, max) => {
@@ -717,22 +717,35 @@ async function viewStudentResult(regNo, semester) {
             if (p >= 80) return { label: 'A', class: 'bg-success-subtle text-success' };
             if (p >= 70) return { label: 'B+', class: 'bg-primary-subtle text-primary' };
             if (p >= 60) return { label: 'B', class: 'bg-info-subtle text-info' };
+            if (p >= 50) return { label: 'C+', class: 'bg-warning-subtle text-warning' };
+            if (p >= 40) return { label: 'D', class: 'bg-secondary-subtle text-secondary' };
             return { label: 'F', class: 'bg-danger-subtle text-danger' };
         };
 
         const percentage = ((r.total / 960) * 100).toFixed(2);
+        const statusClass = r.result === 'PASS' ? 'bg-success' : 'bg-danger';
 
         content.innerHTML = `
             <div class="bg-light rounded-4 p-4 mb-4">
                 <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <p class="text-uppercase small fw-bold text-muted mb-1">Student Details</p>
+                    <div class="col-md-7">
+                        <p class="text-uppercase small fw-bold text-muted mb-1">Student Performance Report</p>
                         <h4 class="fw-bold mb-1">${r.name}</h4>
                         <div class="text-muted small">Roll: <strong>${r.regNo}</strong> | Sem: <strong>${r.semester}${getOrdinal(r.semester)}</strong></div>
                     </div>
-                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                        <div class="h2 fw-bold text-primary mb-0">${percentage}%</div>
-                        <div class="text-muted small text-uppercase fw-bold">Percentage</div>
+                    <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex gap-3 justify-content-md-end">
+                        <div class="text-center">
+                            <div class="h3 fw-bold text-primary mb-0">${r.total}</div>
+                            <div class="text-muted x-small text-uppercase fw-bold">Total Marks</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="h3 fw-bold text-primary mb-0">${percentage}%</div>
+                            <div class="text-muted x-small text-uppercase fw-bold">Percentage</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="badge ${statusClass} fs-6 px-3 py-2">${r.result}</div>
+                            <div class="text-muted x-small text-uppercase fw-bold mt-1">Status</div>
+                        </div>
                     </div>
                 </div>
             </div>

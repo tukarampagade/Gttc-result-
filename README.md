@@ -60,7 +60,7 @@ To deploy this application to a production server (e.g., VPS, Heroku, AWS):
 
 ## Admin Credentials
 - **Email:** `tukarampagade781@gmail.com`
-- **Password:** `Tukaram@2007`
+- **Password:** `************`
 
 ## Created By
 Tukaram Pagade

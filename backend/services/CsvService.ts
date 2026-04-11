@@ -16,6 +16,11 @@ export class CsvService {
     for (const record of records as any[]) {
       const { regNo, name, semester } = record;
       
+      if (!regNo || regNo.trim() === '') {
+        console.warn('Skipping row with missing regNo');
+        continue;
+      }
+      
       // 1. Ensure student exists
       let student = await StudentRepository.findByRegNo(regNo);
       if (!student) {

@@ -455,16 +455,16 @@
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body p-4">
-                            <h5 class="fw-bold mb-3"><i class="bi bi-file-earmark-pdf text-danger me-2"></i> PDF Result Sheet</h5>
-                            <p class="text-muted small mb-4">Upload a PDF result sheet to automatically extract and store student marks.</p>
+                            <h5 class="fw-bold mb-3"><i class="bi bi-file-earmark-medical text-danger me-2"></i> Document Result Sheet</h5>
+                            <p class="text-muted small mb-4">Upload a PDF, Word (.docx), or PowerPoint (.pptx) result sheet to automatically extract and store student marks.</p>
                             
                             <div class="mb-4">
-                                <label class="form-label small fw-bold">Select PDF File</label>
-                                <input type="file" class="form-control" id="pdfFileInput" accept=".pdf">
+                                <label class="form-label small fw-bold">Select Document File</label>
+                                <input type="file" class="form-control" id="pdfFileInput" accept=".pdf,.docx,.pptx">
                             </div>
                             
-                            <button class="btn btn-danger px-4" onclick="uploadPDF()">
-                                <i class="bi bi-file-earmark-pdf me-2"></i> Process PDF
+                            <button class="btn btn-danger px-4" id="processDocBtn" onclick="uploadPDF()">
+                                <i class="bi bi-cpu me-2"></i> Process Document
                             </button>
                             <div id="pdfUploadStatus" class="mt-4"></div>
                         </div>

@@ -1101,12 +1101,13 @@ async function uploadPDF() {
     const file = fileInput.files[0];
     
     if (!file) {
-        showToast('Please select a PDF file', 'warning');
+        showToast('Please select a document file', 'warning');
         return;
     }
     
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
-        showToast('Please select a valid PDF file', 'danger');
+    const ext = file.name.toLowerCase().split('.').pop();
+    if (!['pdf', 'docx', 'pptx'].includes(ext)) {
+        showToast('Please select a valid PDF, Word, or PowerPoint file', 'danger');
         return;
     }
 
@@ -1115,7 +1116,8 @@ async function uploadPDF() {
 
 async function processUpload(file, statusElement) {
     const formData = new FormData();
-    const isCsv = file.name.toLowerCase().endsWith('.csv');
+    const filename = file.name.toLowerCase();
+    const isCsv = filename.endsWith('.csv');
     const endpoint = isCsv ? '/api/admin/upload-csv' : '/api/admin/upload-pdf';
     const fieldName = isCsv ? 'csv' : 'pdf';
     
@@ -1134,13 +1136,16 @@ async function processUpload(file, statusElement) {
 
         const res = await response.json();
         if (response.ok) {
-            statusElement.innerHTML = `<div class="alert alert-success">Success! Processed ${res.data.count || res.data.length} records.</div>`;
+            const count = res.data.count !== undefined ? res.data.count : (res.data.length || 0);
+            statusElement.innerHTML = `<div class="alert alert-success">Success! Processed ${count} records.</div>`;
             loadAnalytics();
+            showToast(`Successfully processed ${count} records from ${file.name}`, 'success');
         } else {
             throw new Error(res.message);
         }
     } catch (err) {
         statusElement.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+        showToast(err.message, 'danger');
     }
 }
 

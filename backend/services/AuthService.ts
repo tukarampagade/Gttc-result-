@@ -90,14 +90,12 @@ export class AuthService {
       console.log('Admin password reset successfully');
     }
 
-    // Only seed if no students exist
-    const studentCount = (db.prepare('SELECT COUNT(*) as count FROM students').get() as any).count;
-    if (studentCount > 0) {
-      console.log('Database already contains data, skipping fresh seed.');
-      return;
-    }
+    // Clear existing data to ensure a fresh start
+    db.prepare('DELETE FROM results').run();
+    db.prepare('DELETE FROM students').run();
+    console.log('Existing data cleared.');
 
-    // Seed students from PDF (Sl No 1-23)
+    // Seed students from PDF (Sl No 1-45)
     const pdfStudents = [
       { regNo: '8080101', name: 'ABHINANDAN NAMDEV JADHAV', marks: [[62,38],[64,50],[65,50],[63,42],[65,49],[67,50],[66,48],[60,48]] },
       { regNo: '8080102', name: 'ADINATH B VASULKAR', marks: [[47,10],[49,35],[54,37],[49,18],[61,40],[56,35],[64,45],[54,39]] },
@@ -122,7 +120,28 @@ export class AuthService {
       { regNo: '8080127', name: 'RAKSHITA RAMESH KAMBLE', marks: [[48,18],[47,42],[53,40],[59,34],[59,40],[64,25],[55,45],[57,35]] },
       { regNo: '8080128', name: 'SALONI BELGAONKAR', marks: [[39,25],[48,34],[51,39],[49,25],[63,45],[48,25],[55,47],[49,31]] },
       { regNo: '8080129', name: 'SAMARTH NARAYAN SUNTHAKAR', marks: [[46,25],[45,50],[50,47],[55,25],[66,49],[63,25],[58,43],[57,44]] },
-      { regNo: '8080142', name: 'TUKARAM PRAKASH PAGADE', marks: [[53,27],[47,35],[59,43],[53,25],[65,49],[64,50],[68,47],[47,26]] }
+      { regNo: '8080130', name: 'SANAN ASIF MOMIN', marks: [[40,4],[44,25],[42,28],[42,11],[48,25],[44,25],[55,41],[46,37]] },
+      { regNo: '8080132', name: 'SANKET GOVINDRAY MESTA', marks: [[38,20],[45,34],[43,44],[49,19],[52,5],[53,25],[48,40],[48,38]] },
+      { regNo: '8080133', name: 'SANKET NARAYAN TAMMANACHE', marks: [[37,10],[41,7],[40,9],[43,4],[43,10],[39,25],[36,25],[38,29]] },
+      { regNo: '8080134', name: 'SATISH SHASHIKUMAR CHIMANAPPAGOL', marks: [[40,0],[46,18],[41,19],[43,8],[43,36],[45,25],[40,29],[47,31]] },
+      { regNo: '8080135', name: 'SHREEHARI SANADI', marks: [[36,10],[46,25],[48,25],[47,5],[51,0],[44,25],[39,25],[42,26]] },
+      { regNo: '8080136', name: 'SHREYAS KISAN NILAJKAR', marks: [[35,8],[47,0],[41,25],[39,2],[43,25],[39,25],[35,0],[38,31]] },
+      { regNo: '8080137', name: 'SOURABH NARAYAN APTEKAR', marks: [[35,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[39,26]] },
+      { regNo: '8080138', name: 'SUDEEP MAHESH HUCHCHARAYAPPAGOL', marks: [[35,0],[41,25],[43,31],[42,11],[40,25],[38,25],[44,25],[36,25]] },
+      { regNo: '8080139', name: 'SURAJ YALLAPPA BHANDARI', marks: [[35,15],[42,25],[44,25],[50,14],[42,10],[43,25],[40,27],[44,31]] },
+      { regNo: '8080140', name: 'SWAYAM SANDEEP ROKADE', marks: [[37,9],[44,26],[41,27],[36,7],[50,12],[43,12],[42,44],[52,29]] },
+      { regNo: '8080141', name: 'TEJAS CHANDRAKANT PATHARVAT', marks: [[38,9],[51,20],[44,30],[44,10],[52,25],[57,25],[49,35],[60,48]] },
+      { regNo: '8080142', name: 'TUKARAM PRAKASH PAGADE', marks: [[53,27],[47,35],[59,43],[53,25],[65,49],[64,50],[68,47],[47,26]] },
+      { regNo: '8080146', name: 'AKASH N SHINGANNAVAR', marks: [[35,14],[38,25],[42,31],[39,7],[40,41],[43,25],[35,25],[55,44]] },
+      { regNo: '8080147', name: 'MOHAMMAD TAHIR ABDUL BASIT SOUDAGAR', marks: [[39,3],[45,8],[40,26],[38,8],[49,10],[38,25],[43,30],[53,49]] },
+      { regNo: '8080150', name: 'ADITI SATISH PATIL', marks: [[62,36],[50,34],[44,50],[60,32],[63,25],[51,25],[55,43],[55,44]] },
+      { regNo: '8080151', name: 'AMRUTA YALLANAGOUDA CHIKKANAGOUDAR', marks: [[54,27],[52,28],[41,36],[51,25],[56,40],[52,25],[57,38],[53,49]] },
+      { regNo: '8080152', name: 'DAYANANDA', marks: [[55,25],[51,40],[45,41],[44,26],[55,37],[54,25],[42,25],[46,35]] },
+      { regNo: '8080153', name: 'PREETHI G R', marks: [[64,32],[54,46],[54,50],[51,28],[66,48],[68,35],[52,42],[39,33]] },
+      { regNo: '8080154', name: 'SAJIDA JAILANI SHAIKH', marks: [[58,25],[58,47],[53,45],[44,39],[65,50],[64,50],[57,46],[59,45]] },
+      { regNo: '8080155', name: 'SOMARAJ A', marks: [[68,42],[59,44],[61,50],[49,37],[58,39],[65,50],[45,26],[53,43]] },
+      { regNo: '8080156', name: 'VAISHNAVI SADASHIV MIRAJAKAR', marks: [[57,18],[47,41],[42,48],[66,25],[58,45],[63,30],[57,38],[52,43]] },
+      { regNo: '8080157', name: 'VIKAS MAHANTESH YAMAKANAMARDI', marks: [[40,10],[40,30],[46,42],[56,20],[42,0],[42,0],[42,0],[38,43]] }
     ];
 
     for (const s of pdfStudents) {
@@ -131,14 +150,14 @@ export class AuthService {
         regNo: s.regNo,
         name: s.name,
         department: 'DAIML – Data Science & AI/ML',
-        semester: 4,
+        semester: 3,
         status: 'Active',
         password
       });
       
       const resultData: any = {
         regNo: s.regNo,
-        semester: 4
+        semester: 3
       };
 
       for (let i = 0; i < 8; i++) {

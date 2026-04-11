@@ -62,6 +62,7 @@ app.get('/api/admin/analytics', authenticateToken, authorizeAdmin, AdminControll
 app.get('/api/admin/audit-logs', authenticateToken, authorizeAdmin, AdminController.getAuditLogs);
 app.post('/api/admin/update-theme', authenticateToken, authorizeAdmin, AdminController.updateThemeColor);
 app.post('/api/admin/bulk-update-status', authenticateToken, authorizeAdmin, AdminController.bulkUpdateStudentStatus);
+app.post('/api/admin/bulk-delete-results', authenticateToken, authorizeAdmin, AdminController.bulkDeleteResults);
 app.get('/api/admin/analyze-student/:regNo', authenticateToken, authorizeAdmin, AdminController.analyzeStudent);
 app.post('/api/admin/upload-pdf', authenticateToken, authorizeAdmin, upload.single('pdf'), UploadController.uploadPdf);
 app.post('/api/admin/upload-csv', authenticateToken, authorizeAdmin, upload.single('csv'), UploadController.uploadCsv);

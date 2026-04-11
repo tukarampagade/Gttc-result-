@@ -311,7 +311,7 @@
             </div>
 
             <div class="table-card">
-                <div class="p-3 border-bottom d-flex flex-wrap gap-3">
+                <div class="p-3 border-bottom d-flex flex-wrap gap-3 align-items-center">
                     <div class="input-group" style="max-width: 300px;">
                         <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
                         <input type="text" id="resultSearch" class="form-control border-start-0" placeholder="Search..." onkeyup="filterResults()">
@@ -336,11 +336,29 @@
                             <option value="Inactive">Inactive Students</option>
                         </select>
                     </div>
+                    <div class="ms-auto d-flex gap-2 align-items-center" id="resultBulkActions" style="display: none !important;">
+                        <span class="text-muted small me-2" id="selectedResultsCount">0 selected</span>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                Bulk Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                <li>
+                                    <a class="dropdown-item text-danger" href="#" onclick="bulkDeleteResults()">
+                                        <i class="bi bi-trash me-2"></i> Delete Results
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
+                                <th style="width: 40px;">
+                                    <input type="checkbox" class="form-check-input" id="selectAllResults" onclick="toggleSelectAllResults()">
+                                </th>
                                 <th>Roll No.</th>
                                 <th>Student</th>
                                 <th>Semester</th>

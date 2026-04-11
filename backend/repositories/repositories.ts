@@ -160,6 +160,11 @@ export class ResultRepository {
     return db.prepare('DELETE FROM results WHERE regNo = ?').run(regNo);
   }
 
+  static bulkDelete(regNos: string[], semester: number) {
+    const placeholders = regNos.map(() => '?').join(',');
+    return db.prepare(`DELETE FROM results WHERE semester = ? AND regNo IN (${placeholders})`).run(semester, ...regNos);
+  }
+
   static getRank(regNo: string, semester: number) {
     const query = `
       SELECT COUNT(*) + 1 as rank

@@ -130,6 +130,17 @@ export class AdminController {
     }
   }
 
+  static async bulkDeleteResults(req: any, res: Response) {
+    try {
+      const { regNos, semester } = req.body;
+      if (!regNos || !semester) throw new Error('regNos and semester are required');
+      await AdminService.bulkDeleteResults(regNos, parseInt(semester), req.user.email || req.user.regNo);
+      res.json(ApiResponse.ok('Results deleted successfully'));
+    } catch (error: any) {
+      res.status(400).json(ApiResponse.error(error.message));
+    }
+  }
+
   static async analyzeStudent(req: any, res: Response) {
     try {
       const { regNo } = req.params;

@@ -408,6 +408,11 @@ function renderResultTable(pagination) {
         (r.studentName && r.studentName.toLowerCase().includes(searchTerm))
     );
 
+    // Reset select all checkbox
+    const selectAll = document.getElementById('selectAllResults');
+    if (selectAll) selectAll.checked = false;
+    updateResultSelection();
+
     tbody.innerHTML = filtered.map(r => {
         const p = (r.total / 960) * 100;
         let grade = 'F';
@@ -420,6 +425,9 @@ function renderResultTable(pagination) {
 
         return `
             <tr>
+                <td>
+                    <input type="checkbox" class="form-check-input result-checkbox" value="${r.regNo}" data-semester="${r.semester || 3}" onclick="updateResultSelection()">
+                </td>
                 <td><code class="fw-bold">${r.regNo}</code></td>
                 <td><div class="fw-bold">${r.studentName || 'Unknown'}</div></td>
                 <td>${r.semester || 3}${getOrdinal(r.semester || 3)} Sem</td>
@@ -443,6 +451,73 @@ function renderResultTable(pagination) {
     renderPagination('resultPagination', pagination.total, pagination.page, (p) => {
         loadResults(p);
     });
+}
+
+function toggleSelectAllResults() {
+    const selectAll = document.getElementById('selectAllResults');
+    const checkboxes = document.querySelectorAll('.result-checkbox');
+    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    updateResultSelection();
+}
+
+function updateResultSelection() {
+    const checkboxes = document.querySelectorAll('.result-checkbox:checked');
+    const bulkActions = document.getElementById('resultBulkActions');
+    const countText = document.getElementById('selectedResultsCount');
+    
+    if (bulkActions && countText) {
+        if (checkboxes.length > 0) {
+            bulkActions.style.setProperty('display', 'flex', 'important');
+            countText.innerText = `${checkboxes.length} selected`;
+        } else {
+            bulkActions.style.setProperty('display', 'none', 'important');
+        }
+    }
+}
+
+async function bulkDeleteResults() {
+    const checkboxes = document.querySelectorAll('.result-checkbox:checked');
+    const selected = Array.from(checkboxes).map(cb => ({
+        regNo: cb.value,
+        semester: parseInt(cb.getAttribute('data-semester'))
+    }));
+    
+    if (selected.length === 0) return;
+
+    // We need to group by semester because our bulk delete API takes one semester at a time
+    // Or we can modify the API to handle multiple semesters.
+    // For simplicity, let's check if all selected are for the same semester.
+    const semesters = [...new Set(selected.map(s => s.semester))];
+    
+    if (semesters.length > 1) {
+        showToast('Please select results from the same semester for bulk deletion.', 'warning');
+        return;
+    }
+
+    const semester = semesters[0];
+    const regNos = selected.map(s => s.regNo);
+
+    showConfirm(
+        'Bulk Delete Results',
+        `Are you sure you want to delete results for ${regNos.length} students in Semester ${semester}? This action cannot be undone.`,
+        async () => {
+            try {
+                const res = await request('/admin/bulk-delete-results', {
+                    method: 'POST',
+                    body: JSON.stringify({ regNos, semester })
+                });
+                
+                if (res.status === 'success') {
+                    showToast(`Successfully deleted ${regNos.length} results.`, 'success');
+                    loadResults(resultPage);
+                } else {
+                    throw new Error(res.message);
+                }
+            } catch (err) {
+                showToast(err.message, 'danger');
+            }
+        }
+    );
 }
 
 function openEditModal(regNo, name, email, department, semester, dob, status) {
@@ -720,7 +795,7 @@ async function viewStudentResult(regNo, semester) {
 async function loadAuditLogs(page = 1) {
     const tbody = document.getElementById('auditTableBody');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center"><div class="spinner-border spinner-border-sm text-primary"></div> Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div> Loading audit logs...</td></tr>';
     
     try {
         const res = await request(`/admin/audit-logs?page=${page}&limit=${itemsPerPage}`);
@@ -729,7 +804,7 @@ async function loadAuditLogs(page = 1) {
         auditPage = pagination.page;
         renderAuditTable(pagination);
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Error: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Error: ${err.message}</td></tr>`;
     }
 }
 
@@ -741,27 +816,53 @@ function renderAuditTable(pagination) {
     const page = pagination ? pagination.page : auditPage;
 
     if (allAuditLogs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No logs found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No audit logs found.</td></tr>';
     } else {
         tbody.innerHTML = allAuditLogs.map(log => {
             let detailsHtml = '-';
+            let actionBadgeClass = 'bg-light text-dark';
+            
+            // Determine badge color based on action
+            const actionType = log.action.split(':')[0];
+            if (actionType.includes('ADD')) actionBadgeClass = 'bg-success-subtle text-success border-success-subtle';
+            else if (actionType.includes('UPDATE')) actionBadgeClass = 'bg-primary-subtle text-primary border-primary-subtle';
+            else if (actionType.includes('DELETE')) actionBadgeClass = 'bg-danger-subtle text-danger border-danger-subtle';
+            else if (actionType.includes('LOGIN')) actionBadgeClass = 'bg-info-subtle text-info border-info-subtle';
+            else if (actionType.includes('UPLOAD')) actionBadgeClass = 'bg-warning-subtle text-warning border-warning-subtle';
+            else if (actionType.includes('BULK')) actionBadgeClass = 'bg-purple-subtle text-purple border-purple-subtle';
+
             if (log.details) {
                 if (log.details.includes('Updated fields:')) {
                     const fields = log.details.replace('Updated fields: ', '').split(', ');
                     detailsHtml = `<div class="d-flex flex-wrap gap-1">
-                        ${fields.map(f => `<span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 small" style="font-size: 0.7rem;">${f}</span>`).join('')}
+                        ${fields.map(f => `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 small" style="font-size: 0.7rem; font-weight: 500;">${f}</span>`).join('')}
                     </div>`;
                 } else if (log.details.includes('Updated status to')) {
                     const parts = log.details.split(': ');
                     const statusInfo = parts[0];
                     const students = parts[1] ? parts[1].split(', ') : [];
                     detailsHtml = `<div>
-                        <div class="fw-bold small mb-1">${statusInfo}</div>
+                        <div class="fw-bold small mb-1 text-primary">${statusInfo}</div>
                         <div class="d-flex flex-wrap gap-1">
-                            ${students.slice(0, 5).map(s => `<span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 small" style="font-size: 0.65rem;">${s}</span>`).join('')}
-                            ${students.length > 5 ? `<span class="text-muted small">+${students.length - 5} more</span>` : ''}
+                            ${students.slice(0, 8).map(s => `<span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 small" style="font-size: 0.65rem;">${s}</span>`).join('')}
+                            ${students.length > 8 ? `<span class="text-muted small" style="font-size: 0.65rem;">+${students.length - 8} more</span>` : ''}
                         </div>
                     </div>`;
+                } else if (log.details.includes('Added student') || log.details.includes('Deleted student')) {
+                    const isAdd = log.details.includes('Added');
+                    detailsHtml = `<div class="small ${isAdd ? 'text-success' : 'text-danger'} d-flex align-items-center gap-1">
+                        <i class="bi ${isAdd ? 'bi-plus-circle' : 'bi-trash'}"></i>
+                        <span>${log.details}</span>
+                    </div>`;
+                } else if (log.details.includes('Updated theme color')) {
+                    const colorMatch = log.details.match(/#[0-9a-fA-F]{6}/);
+                    const color = colorMatch ? colorMatch[0] : null;
+                    detailsHtml = `
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted small">${log.details}</span>
+                            ${color ? `<div style="width: 14px; height: 14px; background: ${color}; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 1px 2px rgba(0,0,0,0.1);"></div>` : ''}
+                        </div>
+                    `;
                 } else {
                     detailsHtml = `<span class="text-muted small">${log.details}</span>`;
                 }
@@ -769,10 +870,27 @@ function renderAuditTable(pagination) {
 
             return `
                 <tr>
-                    <td><span class="badge bg-light text-dark border">${log.action}</span></td>
-                    <td><div class="fw-medium">${log.user}</div></td>
+                    <td>
+                        <div class="d-flex flex-column">
+                            <span class="badge ${actionBadgeClass} border mb-1" style="width: fit-content; font-size: 0.7rem;">${log.action.split(': ')[0]}</span>
+                            ${log.action.includes(': ') ? `<span class="text-muted font-monospace" style="font-size: 0.7rem;">ID: ${log.action.split(': ')[1]}</span>` : ''}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center border" style="width: 28px; height: 28px;">
+                                <i class="bi bi-person text-secondary small"></i>
+                            </div>
+                            <div class="fw-medium small text-slate-700">${log.user}</div>
+                        </div>
+                    </td>
                     <td>${detailsHtml}</td>
-                    <td class="text-muted small">${new Date(log.timestamp).toLocaleString()}</td>
+                    <td>
+                        <div class="text-muted small">
+                            <div class="fw-medium text-slate-600">${new Date(log.timestamp).toLocaleDateString()}</div>
+                            <div style="font-size: 0.7rem; opacity: 0.8;">${new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        </div>
+                    </td>
                 </tr>
             `;
         }).join('');

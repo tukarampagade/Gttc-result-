@@ -170,6 +170,16 @@ export class AdminService {
     return { success: true };
   }
 
+  static async bulkDeleteResults(regNos: string[], semester: number, adminEmail: string) {
+    ResultRepository.bulkDelete(regNos, semester);
+    AuditRepository.save({
+      action: 'BULK_RESULT_DELETE',
+      user: adminEmail,
+      details: `Deleted results for Semester ${semester} for ${regNos.length} students: ${regNos.join(', ')}`
+    });
+    return { success: true };
+  }
+
   static async getStudentByRegNo(regNo: string) {
     return StudentRepository.findByRegNo(regNo);
   }

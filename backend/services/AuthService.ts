@@ -90,11 +90,12 @@ export class AuthService {
       console.log('Admin password reset successfully');
     }
 
-    // Clear existing data for a fresh start
-    console.log('Clearing existing student and result data...');
-    db.prepare('DELETE FROM results').run();
-    db.prepare('DELETE FROM students').run();
-    db.prepare('DELETE FROM audit_logs').run();
+    // Only seed if no students exist
+    const studentCount = (db.prepare('SELECT COUNT(*) as count FROM students').get() as any).count;
+    if (studentCount > 0) {
+      console.log('Database already contains data, skipping fresh seed.');
+      return;
+    }
 
     // Seed students from PDF (Sl No 1-23)
     const pdfStudents = [
@@ -114,15 +115,15 @@ export class AuthService {
       StudentRepository.save({
         regNo: s.regNo,
         name: s.name,
-        department: 'Artificial Intelligence',
-        semester: 3,
+        department: 'DAIML – Data Science & AI/ML',
+        semester: 4,
         status: 'Active',
         password
       });
       
       const resultData: any = {
         regNo: s.regNo,
-        semester: 3
+        semester: 4
       };
 
       for (let i = 0; i < 8; i++) {

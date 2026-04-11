@@ -37,7 +37,9 @@ export class AdminController {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const status = req.query.status as string;
-      const students = AdminService.getStudents(page, limit, status);
+      const sort = req.query.sort as string || 'regNo';
+      const order = req.query.order as string || 'ASC';
+      const students = AdminService.getStudents(page, limit, status, sort, order);
       res.json(ApiResponse.ok('Students retrieved', students));
     } catch (error: any) {
       res.status(400).json(ApiResponse.error(error.message));

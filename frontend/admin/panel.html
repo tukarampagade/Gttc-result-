@@ -101,6 +101,18 @@
             padding: 1rem;
             vertical-align: middle;
         }
+        .sortable-header {
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+        .sortable-header:hover {
+            background-color: #f1f5f9 !important;
+        }
+        .sort-icon {
+            font-size: 0.7rem;
+            margin-left: 0.25rem;
+        }
         .badge-active { background: #dcfce7; color: #166534; }
         .badge-pass { background: #dcfce7; color: #166534; }
         .badge-fail { background: #fee2e2; color: #991b1b; }
@@ -108,14 +120,14 @@
 </head>
 <body>
     <div class="sidebar">
-        <div class="p-4 mb-4">
-            <div class="d-flex align-items-center gap-2">
-                <div class="bg-primary rounded p-2">
-                    <i class="bi bi-mortarboard-fill text-white"></i>
+        <div class="p-4 mb-2">
+            <div class="d-flex align-items-center gap-3 p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
+                <div class="bg-white rounded-3 p-2 shadow-sm d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="bi bi-mortarboard-fill text-primary fs-4"></i>
                 </div>
                 <div>
-                    <h6 class="fw-bold mb-0">ResultPro</h6>
-                    <small class="text-muted" style="font-size: 0.6rem;">MANAGEMENT SYSTEM</small>
+                    <h6 class="fw-bold mb-0 text-white letter-spacing-1">ResultPro</h6>
+                    <small class="text-white text-opacity-50 fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">ADMIN PORTAL</small>
                 </div>
             </div>
         </div>
@@ -239,12 +251,24 @@
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th>Roll No.</th>
-                                <th>Name</th>
-                                <th>Department</th>
-                                <th>Semester</th>
-                                <th>DOB</th>
-                                <th>Status</th>
+                                <th class="sortable-header" onclick="sortStudents('regNo')">
+                                    Roll No. <i class="bi bi-arrow-down-up sort-icon"></i>
+                                </th>
+                                <th class="sortable-header" onclick="sortStudents('name')">
+                                    Name <i class="bi bi-arrow-down-up sort-icon"></i>
+                                </th>
+                                <th class="sortable-header" onclick="sortStudents('department')">
+                                    Department <i class="bi bi-arrow-down-up sort-icon"></i>
+                                </th>
+                                <th class="sortable-header" onclick="sortStudents('semester')">
+                                    Semester <i class="bi bi-arrow-down-up sort-icon"></i>
+                                </th>
+                                <th class="sortable-header" onclick="sortStudents('dob')">
+                                    DOB <i class="bi bi-arrow-down-up sort-icon"></i>
+                                </th>
+                                <th class="sortable-header" onclick="sortStudents('status')">
+                                    Status <i class="bi bi-arrow-down-up sort-icon"></i>
+                                </th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -698,7 +722,7 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">EM for AI (24AI31T)</label>
+                                <label class="form-label small fw-bold">Advanced Math for AI (24AI41T)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
                                     <input type="number" class="form-control" id="res_subject1_ia" placeholder="IA" required>
@@ -707,7 +731,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">PY. Programming (24AI32T)</label>
+                                <label class="form-label small fw-bold">Data Warehousing (24AI42T)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
                                     <input type="number" class="form-control" id="res_subject2_ia" placeholder="IA" required>
@@ -716,7 +740,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">OOPS with C++ (24AI33T)</label>
+                                <label class="form-label small fw-bold">Machine Learning (24AI43T)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
                                     <input type="number" class="form-control" id="res_subject3_ia" placeholder="IA" required>
@@ -725,7 +749,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">Intro. to MC & ES (24AI34T)</label>
+                                <label class="form-label small fw-bold">Deep Learning (24AI44T)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
                                     <input type="number" class="form-control" id="res_subject4_ia" placeholder="IA" required>
@@ -734,7 +758,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">C++ Lab (24AI35P)</label>
+                                <label class="form-label small fw-bold">ML Lab (24AI45P)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
                                     <input type="number" class="form-control" id="res_subject5_ia" placeholder="IA" required>
@@ -743,7 +767,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">PY. Programming Lab (24AI36P)</label>
+                                <label class="form-label small fw-bold">Data Science Lab (24AI46P)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
                                     <input type="number" class="form-control" id="res_subject6_ia" placeholder="IA" required>
@@ -752,7 +776,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">Microcontroller Lab (24AI37P)</label>
+                                <label class="form-label small fw-bold">Deep Learning Lab (24AI47P)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
                                     <input type="number" class="form-control" id="res_subject7_ia" placeholder="IA" required>
@@ -761,7 +785,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">DBMS (24AI38P)</label>
+                                <label class="form-label small fw-bold">Mini Project (24AI48P)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
                                     <input type="number" class="form-control" id="res_subject8_ia" placeholder="IA" required>
@@ -786,6 +810,27 @@
                             </div>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Result Modal -->
+    <div class="modal fade" id="viewResultModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Detailed Result Analysis</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="modalResultContent">
+                    <!-- Loaded via JS -->
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary px-4" onclick="window.print()">
+                        <i class="bi bi-printer me-2"></i> Print Result
+                    </button>
                 </div>
             </div>
         </div>

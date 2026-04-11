@@ -1,7 +1,3 @@
-// ✅ ADD THIS AT VERY TOP
-import dotenv from 'dotenv';
-dotenv.config();
-
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
@@ -19,9 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-
 const PORT = Number(process.env.PORT) || 3000;
-
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
@@ -33,8 +27,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files from frontend
-app.use(express.static(path.join(__dirname, '../frontend')));
+// Serve static files from the frontend directory
+app.use(express.static(path.join(process.cwd(), 'frontend')));
 
 // Auth Routes
 app.post('/api/auth/login', AuthController.login);
@@ -42,7 +36,7 @@ app.post('/api/auth/login', AuthController.login);
 // Student Routes
 app.get('/api/result/get', authenticateToken, ResultController.getResult);
 app.get('/api/result/history', authenticateToken, ResultController.getHistory);
-app.get('/api/theme/color', AdminController.getThemeColor);
+app.get('/api/theme/color', AdminController.getThemeColor); // Publicly accessible
 
 // Admin Routes
 app.get('/api/admin/students', authenticateToken, authorizeAdmin, AdminController.getStudents);
@@ -61,14 +55,23 @@ app.get('/api/admin/analyze-student/:regNo', authenticateToken, authorizeAdmin, 
 app.post('/api/admin/upload-pdf', authenticateToken, authorizeAdmin, upload.single('pdf'), UploadController.uploadPdf);
 app.post('/api/admin/upload-csv', authenticateToken, authorizeAdmin, upload.single('csv'), UploadController.uploadCsv);
 
-// SPA fallback
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+// API 404 handler - prevent SPA fallback for API routes
+app.all('/api/*', (req, res) => {
+  console.log(`API 404: ${req.method} ${req.url}`);
+  res.status(404).json({
+    status: 'error',
+    message: `API route not found: ${req.method} ${req.url}`
+  });
 });
 
-// Start Server
+// Fallback to index.html for SPA behavior
+app.get('*', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'frontend/index.html'));
+});
+
+// Seed Admin and Start Server
 AuthService.seedAdmin().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`✅ Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
   });
 });

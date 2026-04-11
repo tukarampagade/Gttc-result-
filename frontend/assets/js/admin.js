@@ -9,6 +9,11 @@ let auditPage = 1;
 let historyPage = 1;
 const itemsPerPage = 10;
 
+let studentSortCol = 'regNo';
+let studentSortDir = 'asc';
+let auditSortCol = 'timestamp';
+let auditSortDir = 'desc';
+
 let resultDistChart, gradeDistChart, deptPassChart;
 
 function initCharts() {
@@ -189,14 +194,37 @@ function showSection(section) {
 async function loadStudents(page = 1) {
     try {
         const status = document.getElementById('studentStatusFilter')?.value || '';
-        const res = await request(`/admin/students?page=${page}&limit=${itemsPerPage}&status=${status}`);
+        const res = await request(`/admin/students?page=${page}&limit=${itemsPerPage}&status=${status}&sort=${studentSortCol}&order=${studentSortDir}`);
         const { data, pagination } = res.data;
         allStudents = data;
         studentPage = pagination.page;
         document.getElementById('studentCountText').innerText = `${pagination.total} total students`;
         renderStudentTable(pagination);
+        updateStudentSortIcons();
     } catch (err) {
         console.error(err);
+    }
+}
+
+function sortStudents(col) {
+    if (studentSortCol === col) {
+        studentSortDir = studentSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+        studentSortCol = col;
+        studentSortDir = 'asc';
+    }
+    loadStudents(1);
+}
+
+function updateStudentSortIcons() {
+    document.querySelectorAll('#studentsSection th i').forEach(icon => {
+        icon.className = 'bi bi-arrow-down-up sort-icon text-muted opacity-50';
+    });
+
+    const activeHeader = document.querySelector(`#studentsSection th[onclick*="'${studentSortCol}'"] i`);
+    if (activeHeader) {
+        activeHeader.className = `bi bi-arrow-${studentSortDir === 'asc' ? 'up' : 'down'} sort-icon text-primary`;
+        activeHeader.classList.remove('opacity-50');
     }
 }
 
@@ -517,6 +545,7 @@ document.getElementById('editResultForm')?.addEventListener('submit', async (e) 
         });
         bootstrap.Modal.getInstance(document.getElementById('editResultModal')).hide();
         showToast('Result updated successfully', 'success');
+        loadResults(resultPage);
         loadAnalytics();
     } catch (err) {
         showToast(err.message, 'danger');
@@ -561,14 +590,14 @@ async function viewStudentResult(regNo, semester) {
         }
 
         const subjects = [
-            { name: 'EM for AI', code: '24AI31T', ia: r.subject1_ia, e: r.subject1_e, marks: r.subject1_t, max: 120 },
-            { name: 'Python Programming', code: '24AI32T', ia: r.subject2_ia, e: r.subject2_e, marks: r.subject2_t, max: 120 },
-            { name: 'OOPS with C++', code: '24AI33T', ia: r.subject3_ia, e: r.subject3_e, marks: r.subject3_t, max: 120 },
-            { name: 'Intro. to MC & ES', code: '24AI34T', ia: r.subject4_ia, e: r.subject4_e, marks: r.subject4_t, max: 120 },
-            { name: 'C++ Lab', code: '24AI35P', ia: r.subject5_ia, e: r.subject5_e, marks: r.subject5_t, max: 120 },
-            { name: 'Python Programming Lab', code: '24AI36P', ia: r.subject6_ia, e: r.subject6_e, marks: r.subject6_t, max: 120 },
-            { name: 'Microcontroller Lab', code: '24AI37P', ia: r.subject7_ia, e: r.subject7_e, marks: r.subject7_t, max: 120 },
-            { name: 'DBMS', code: '24AI38P', ia: r.subject8_ia, e: r.subject8_e, marks: r.subject8_t, max: 120 }
+            { name: 'Advanced Math for AI', code: '24AI41T', ia: r.subject1_ia, e: r.subject1_e, marks: r.subject1_t, max: 120 },
+            { name: 'Data Warehousing', code: '24AI42T', ia: r.subject2_ia, e: r.subject2_e, marks: r.subject2_t, max: 120 },
+            { name: 'Machine Learning', code: '24AI43T', ia: r.subject3_ia, e: r.subject3_e, marks: r.subject3_t, max: 120 },
+            { name: 'Deep Learning', code: '24AI44T', ia: r.subject4_ia, e: r.subject4_e, marks: r.subject4_t, max: 120 },
+            { name: 'ML Lab', code: '24AI45P', ia: r.subject5_ia, e: r.subject5_e, marks: r.subject5_t, max: 120 },
+            { name: 'Data Science Lab', code: '24AI46P', ia: r.subject6_ia, e: r.subject6_e, marks: r.subject6_t, max: 120 },
+            { name: 'Deep Learning Lab', code: '24AI47P', ia: r.subject7_ia, e: r.subject7_e, marks: r.subject7_t, max: 120 },
+            { name: 'Mini Project', code: '24AI48P', ia: r.subject8_ia, e: r.subject8_e, marks: r.subject8_t, max: 120 }
         ];
 
         const getGrade = (marks, max) => {
@@ -670,22 +699,54 @@ async function loadAuditLogs(page = 1) {
 
 function renderAuditTable(pagination) {
     const tbody = document.getElementById('auditTableBody');
+    if (!tbody) return;
+
+    const total = pagination ? pagination.total : allAuditLogs.length;
+    const page = pagination ? pagination.page : auditPage;
+
     if (allAuditLogs.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" class="text-center">No logs found.</td></tr>';
     } else {
-        tbody.innerHTML = allAuditLogs.map(log => `
-            <tr>
-                <td><span class="badge bg-light text-dark border">${log.action}</span></td>
-                <td>${log.user}</td>
-                <td class="small">${log.details || '-'}</td>
-                <td class="text-muted small">${new Date(log.timestamp).toLocaleString()}</td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = allAuditLogs.map(log => {
+            let detailsHtml = '-';
+            if (log.details) {
+                if (log.details.includes('Updated fields:')) {
+                    const fields = log.details.replace('Updated fields: ', '').split(', ');
+                    detailsHtml = `<div class="d-flex flex-wrap gap-1">
+                        ${fields.map(f => `<span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 small" style="font-size: 0.7rem;">${f}</span>`).join('')}
+                    </div>`;
+                } else if (log.details.includes('Updated status to')) {
+                    const parts = log.details.split(': ');
+                    const statusInfo = parts[0];
+                    const students = parts[1] ? parts[1].split(', ') : [];
+                    detailsHtml = `<div>
+                        <div class="fw-bold small mb-1">${statusInfo}</div>
+                        <div class="d-flex flex-wrap gap-1">
+                            ${students.slice(0, 5).map(s => `<span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 small" style="font-size: 0.65rem;">${s}</span>`).join('')}
+                            ${students.length > 5 ? `<span class="text-muted small">+${students.length - 5} more</span>` : ''}
+                        </div>
+                    </div>`;
+                } else {
+                    detailsHtml = `<span class="text-muted small">${log.details}</span>`;
+                }
+            }
+
+            return `
+                <tr>
+                    <td><span class="badge bg-light text-dark border">${log.action}</span></td>
+                    <td><div class="fw-medium">${log.user}</div></td>
+                    <td>${detailsHtml}</td>
+                    <td class="text-muted small">${new Date(log.timestamp).toLocaleString()}</td>
+                </tr>
+            `;
+        }).join('');
     }
 
-    renderPagination('auditPagination', pagination.total, pagination.page, (p) => {
+    renderPagination('auditPagination', total, page, (p) => {
         loadAuditLogs(p);
     });
+
+    updateSortIcons();
 }
 
 // Result History
@@ -756,33 +817,6 @@ function renderHistoryTable() {
         historyPage = p;
         renderHistoryTable();
     });
-}
-
-function renderAuditTable() {
-    const tbody = document.getElementById('auditTableBody');
-    const start = (auditPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const paginated = allAuditLogs.slice(start, end);
-
-    if (paginated.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No logs found.</td></tr>';
-    } else {
-        tbody.innerHTML = paginated.map(log => `
-            <tr>
-                <td><span class="badge bg-light text-dark border">${log.action}</span></td>
-                <td>${log.user}</td>
-                <td class="small">${log.details || '-'}</td>
-                <td class="text-muted small">${new Date(log.timestamp).toLocaleString()}</td>
-            </tr>
-        `).join('');
-    }
-
-    renderPagination('auditPagination', allAuditLogs.length, auditPage, (p) => {
-        auditPage = p;
-        renderAuditTable();
-    });
-
-    updateSortIcons();
 }
 
 // Pagination Helper

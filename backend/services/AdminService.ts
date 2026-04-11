@@ -52,8 +52,8 @@ export class AdminService {
     return result;
   }
 
-  static getStudents(page: number = 1, limit: number = 10, status?: string) {
-    const students = StudentRepository.findAll(page, limit, status);
+  static getStudents(page: number = 1, limit: number = 10, status?: string, sort: string = 'regNo', order: string = 'ASC') {
+    const students = StudentRepository.findAll(page, limit, status, sort, order);
     const total = StudentRepository.count(status);
     return {
       data: students,

@@ -24,7 +24,8 @@ async function request(endpoint, options = {}) {
             data = await response.json();
         } else {
             const text = await response.text();
-            throw new Error(`Server returned non-JSON response: ${response.status} ${response.statusText}`);
+            console.error('Non-JSON response received:', text.substring(0, 200));
+            throw new Error(`Server returned non-JSON response: ${response.status}. This usually happens when an API route is missing or failing.`);
         }
 
         if (!response.ok) {

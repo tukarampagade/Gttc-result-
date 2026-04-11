@@ -19,7 +19,7 @@ export class StudentRepository {
     return db.prepare('DELETE FROM students WHERE regNo = ?').run(regNo);
   }
 
-  static findAll(page: number = 1, limit: number = 10, status?: string) {
+  static findAll(page: number = 1, limit: number = 10, status?: string, sort: string = 'regNo', order: string = 'ASC') {
     const offset = (page - 1) * limit;
     let query = 'SELECT * FROM students';
     const params: any[] = [];
@@ -29,7 +29,12 @@ export class StudentRepository {
       params.push(status);
     }
 
-    query += ' ORDER BY regNo ASC LIMIT ? OFFSET ?';
+    // Validate sort column to prevent SQL injection
+    const allowedSortCols = ['regNo', 'name', 'department', 'semester', 'dob', 'status'];
+    const sortCol = allowedSortCols.includes(sort) ? sort : 'regNo';
+    const sortOrder = order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+
+    query += ` ORDER BY ${sortCol} ${sortOrder} LIMIT ? OFFSET ?`;
     params.push(limit, offset);
 
     return db.prepare(query).all(...params);

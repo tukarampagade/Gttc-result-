@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx backend/server.ts",
     "build": "tsc",
-    "start": "tsx backend/server.ts",
+    "start": "node dist/backend/server.js",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
@@ -18,7 +18,7 @@
     "better-sqlite3": "^12.8.0",
     "cors": "^2.8.6",
     "csv-parse": "^6.2.1",
-    "dotenv": "^17.4.1",
+    "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.546.0",

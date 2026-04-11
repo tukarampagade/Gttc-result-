@@ -1,6 +1,7 @@
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const pdf = require('pdf-parse');
+const pdfParse = require('pdf-parse');
+const pdf = typeof pdfParse === 'function' ? pdfParse : pdfParse.default;
 const bcrypt = require('bcryptjs');
 
 import { ResultService } from './ResultService.js';

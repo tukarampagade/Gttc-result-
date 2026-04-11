@@ -9,7 +9,7 @@ npm install mysql2
 ```
 
 ### 2. Update Database Configuration
-Modify `src/server/config/db.ts` to use `mysql2` instead of `better-sqlite3`.
+Modify `backend/config/db.ts` to use `mysql2` instead of `better-sqlite3`.
 
 ```typescript
 import mysql from 'mysql2/promise';

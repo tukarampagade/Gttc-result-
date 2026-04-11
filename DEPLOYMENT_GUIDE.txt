@@ -14,15 +14,16 @@ Railway is the best choice for this app because it supports persistent storage f
 3. **Add Environment Variables**:
    Go to the "Variables" tab in your Railway service and add:
    - `PORT`: `3000`
-   - `JWT_SECRET`: `gen-lang-client-0765674254` (or any strong random string)
+   - `JWT_SECRET`: `gen-lang-client-0765674254`
    - `GEMINI_API_KEY`: `your_actual_gemini_api_key`
+   - `DATABASE_PATH`: `/data/gttc_results.db`
    - `NODE_ENV`: `production`
+
 4. **Persistent Storage (Crucial for SQLite)**:
-   By default, Railway's file system is ephemeral (data is lost on restart).
-   - Go to your service settings.
-   - Click "Add Volume".
-   - Mount it at `/app` (or wherever your project root is).
-   - **Alternative**: Switch to a managed MySQL database on Railway and provide the `MYSQL_URL`.
+   By default, Railway's file system is ephemeral.
+   - Go to your Project Dashboard -> **+ New** -> **Volume**.
+   - Once created, go to your Service -> **Settings** -> **Volumes**.
+   - Mount the volume at: `/data` (This matches the `DATABASE_PATH` above).
 5. **Build & Start Commands**:
    Railway should automatically detect the `package.json`.
    - Build Command: `npm run build`
@@ -37,7 +38,9 @@ Railway is the best choice for this app because it supports persistent storage f
 | `NODE_ENV` | Environment mode | `production` |
 
 ## 4. Troubleshooting
-- **"Server returned non-JSON response"**: This usually means the server crashed or the API route is incorrect. Check Railway logs.
+- **"Error deploying from source"**: This usually means the build failed. Ensure `npm run build` (which runs `tsc`) completes without errors. Check the "Build" logs in Railway.
+- **"API route not found: GET /api/auth/login"**: This happens if you try to visit the login API directly in your browser. The login route only accepts POST requests from the login form.
+- **"Root Directory"**: Ensure the Root Directory in Railway's Build settings is set to `/`.
 - **Data disappearing**: Ensure you have a "Volume" mounted in Railway if using SQLite.
 - **Gemini errors**: Ensure your API key is valid and has access to `gemini-1.5-flash`.
 

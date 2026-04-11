@@ -138,9 +138,6 @@
             <a class="nav-link" href="#" onclick="showSection('students')">
                 <i class="bi bi-people-fill"></i> Students
             </a>
-            <a class="nav-link" href="#" onclick="showSection('status-management')">
-                <i class="bi bi-person-check-fill"></i> Status Management
-            </a>
             <a class="nav-link" href="#" onclick="showSection('results')">
                 <i class="bi bi-file-earmark-text-fill"></i> Results
             </a>
@@ -215,6 +212,15 @@
                     <p class="text-muted" id="studentCountText">0 total students</p>
                 </div>
                 <div class="d-flex gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Bulk Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="bulkUpdateStudentStatus('Active')"><i class="bi bi-check-circle text-success me-2"></i>Mark as Active</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="bulkUpdateStudentStatus('Inactive')"><i class="bi bi-x-circle text-secondary me-2"></i>Mark as Inactive</a></li>
+                        </ul>
+                    </div>
                     <button class="btn btn-light border" onclick="loadStudents()">
                         <i class="bi bi-arrow-clockwise"></i> Refresh
                     </button>
@@ -251,6 +257,9 @@
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
+                                <th style="width: 40px;">
+                                    <input type="checkbox" id="selectAllStudents" class="form-check-input" onclick="toggleSelectAllStudents()">
+                                </th>
                                 <th class="sortable-header" onclick="sortStudents('regNo')">
                                     Roll No. <i class="bi bi-arrow-down-up sort-icon"></i>
                                 </th>
@@ -277,74 +286,6 @@
                 </div>
                 <div class="p-3 border-top d-flex justify-content-center">
                     <ul class="pagination pagination-sm mb-0" id="studentPagination"></ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Status Management Section -->
-        <div id="statusManagementSection" style="display:none;">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h3 class="fw-bold">Status Management</h3>
-                    <p class="text-muted">Bulk update and manage student statuses</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <div class="dropdown">
-                        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            Bulk Actions
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" onclick="bulkUpdateStatus('Active')">Mark as Active</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="bulkUpdateStatus('Inactive')">Mark as Inactive</a></li>
-                        </ul>
-                    </div>
-                    <button class="btn btn-light border" onclick="loadStatusManagement(1)">
-                        <i class="bi bi-arrow-clockwise"></i> Refresh
-                    </button>
-                </div>
-            </div>
-
-            <div class="table-card">
-                <div class="p-3 border-bottom d-flex flex-wrap gap-3">
-                    <div class="input-group" style="max-width: 300px;">
-                        <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
-                        <input type="text" id="statusSearch" class="form-control border-start-0" placeholder="Search..." onkeyup="filterStatusManagement()">
-                    </div>
-                    <div style="min-width: 180px;">
-                        <select id="statusDeptFilter" class="form-select" onchange="loadStatusManagement(1)">
-                            <option value="">All Departments</option>
-                            <option value="Artificial Intelligence">Artificial Intelligence</option>
-                            <option value="Mechanical Engineering">Mechanical Engineering</option>
-                            <option value="Mechatronics">Mechatronics</option>
-                            <option value="Tool & Die Making">Tool & Die Making</option>
-                        </select>
-                    </div>
-                    <div style="min-width: 150px;">
-                        <select id="statusFilter" class="form-select" onchange="loadStatusManagement(1)">
-                            <option value="">All Status</option>
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th style="width: 40px;"><input type="checkbox" id="selectAllStatus" onclick="toggleSelectAllStatus()"></th>
-                                <th>Roll No</th>
-                                <th>Name</th>
-                                <th>Department</th>
-                                <th>Status</th>
-                                <th>Gemini Insight</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="statusTableBody"></tbody>
-                    </table>
-                </div>
-                <div class="p-3 border-top d-flex justify-content-center">
-                    <ul class="pagination pagination-sm mb-0" id="statusPagination"></ul>
                 </div>
             </div>
         </div>

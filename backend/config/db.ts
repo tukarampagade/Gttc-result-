@@ -5,7 +5,7 @@ const Database = require('better-sqlite3');
 import path from 'path';
 import fs from 'fs';
 
-const dbPath = path.join(process.cwd(), 'gttc_results.db');
+const dbPath = process.env.DATABASE_PATH || path.join(process.cwd(), 'gttc_results.db');
 let db: any;
 
 function initDb() {

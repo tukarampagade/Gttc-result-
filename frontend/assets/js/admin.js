@@ -247,6 +247,7 @@ function renderStudentTable(pagination) {
 
     tbody.innerHTML = filtered.map(s => `
         <tr>
+            <td><input type="checkbox" class="student-checkbox form-check-input" value="${s.regNo}"></td>
             <td><code class="fw-bold">${s.regNo}</code></td>
             <td>
                 <div class="fw-bold">${s.name}</div>
@@ -258,6 +259,9 @@ function renderStudentTable(pagination) {
             <td><span class="badge ${s.status === 'Inactive' ? 'badge-fail' : 'badge-active'}">${s.status || 'Active'}</span></td>
             <td>
                 <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="getGeminiInsight('${s.regNo}')" title="AI Analysis">
+                        <i class="bi bi-sparkles"></i>
+                    </button>
                     <button class="btn btn-sm btn-light border" onclick="openEditModal('${s.regNo}', '${s.name}', '${s.email || ''}', '${s.department || ''}', ${s.semester || 1}, '${s.dob || ''}', '${s.status || 'Active'}')" title="Edit">
                         <i class="bi bi-pencil"></i>
                     </button>
@@ -272,6 +276,38 @@ function renderStudentTable(pagination) {
     renderPagination('studentPagination', pagination.total, pagination.page, (p) => {
         loadStudents(p);
     });
+    document.getElementById('selectAllStudents').checked = false;
+}
+
+function toggleSelectAllStudents() {
+    const isChecked = document.getElementById('selectAllStudents').checked;
+    document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = isChecked);
+}
+
+async function bulkUpdateStudentStatus(status) {
+    const selected = Array.from(document.querySelectorAll('.student-checkbox:checked')).map(cb => cb.value);
+    if (selected.length === 0) {
+        showToast('Please select at least one student', 'warning');
+        return;
+    }
+
+    if (!confirm(`Are you sure you want to mark ${selected.length} students as ${status}?`)) return;
+
+    try {
+        const res = await request('/admin/bulk-update-status', {
+            method: 'POST',
+            body: JSON.stringify({ regNos: selected, status })
+        });
+
+        if (res.status === 'success') {
+            showToast(`Successfully updated ${selected.length} students to ${status}`, 'success');
+            loadStudents(studentPage);
+        } else {
+            throw new Error(res.message);
+        }
+    } catch (err) {
+        showToast(err.message, 'danger');
+    }
 }
 
 // Result Management
@@ -1083,89 +1119,6 @@ async function saveThemeColor() {
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalText;
-    }
-}
-
-// Status Management Functions
-async function loadStatusManagement(page = 1) {
-    statusPage = page;
-    const dept = document.getElementById('statusDeptFilter').value;
-    const status = document.getElementById('statusFilter').value;
-    
-    try {
-        const res = await request(`/admin/students?page=${page}&limit=${itemsPerPage}&status=${status}&dept=${dept}`);
-        const { data, pagination } = res.data;
-        
-        const tbody = document.getElementById('statusTableBody');
-        tbody.innerHTML = data.map(s => `
-            <tr>
-                <td><input type="checkbox" class="status-checkbox" value="${s.regNo}"></td>
-                <td>${s.regNo}</td>
-                <td>${s.name}</td>
-                <td>${s.department}</td>
-                <td>
-                    <span class="badge bg-${s.status === 'Active' ? 'success' : 'secondary'} bg-opacity-10 text-${s.status === 'Active' ? 'success' : 'secondary'}">
-                        ${s.status}
-                    </span>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="getGeminiInsight('${s.regNo}')">
-                        <i class="bi bi-sparkles"></i> Analyze
-                    </button>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-light border" onclick="editStudent('${s.regNo}')">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
-        
-        renderPagination('statusPagination', pagination.total, pagination.page, loadStatusManagement);
-        document.getElementById('selectAllStatus').checked = false;
-    } catch (err) {
-        console.error(err);
-        showToast('Failed to load students', 'danger');
-    }
-}
-
-function filterStatusManagement() {
-    const search = document.getElementById('statusSearch').value.toLowerCase();
-    const rows = document.querySelectorAll('#statusTableBody tr');
-    rows.forEach(row => {
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(search) ? '' : 'none';
-    });
-}
-
-function toggleSelectAllStatus() {
-    const isChecked = document.getElementById('selectAllStatus').checked;
-    document.querySelectorAll('.status-checkbox').forEach(cb => cb.checked = isChecked);
-}
-
-async function bulkUpdateStatus(status) {
-    const selected = Array.from(document.querySelectorAll('.status-checkbox:checked')).map(cb => cb.value);
-    if (selected.length === 0) {
-        showToast('Please select at least one student', 'warning');
-        return;
-    }
-
-    if (!confirm(`Are you sure you want to mark ${selected.length} students as ${status}?`)) return;
-
-    try {
-        const res = await request('/admin/bulk-update-status', {
-            method: 'POST',
-            body: JSON.stringify({ regNos: selected, status })
-        });
-
-        if (res.status === 'success') {
-            showToast(`Successfully updated ${selected.length} students to ${status}`, 'success');
-            loadStatusManagement(statusPage);
-        } else {
-            throw new Error(res.message);
-        }
-    } catch (err) {
-        showToast(err.message, 'danger');
     }
 }
 

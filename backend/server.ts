@@ -30,8 +30,19 @@ app.use((req, res, next) => {
 // Serve static files from the frontend directory
 app.use(express.static(path.join(process.cwd(), 'frontend')));
 
+// Health Check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
+});
+
 // Auth Routes
 app.post('/api/auth/login', AuthController.login);
+app.get('/api/auth/login', (req, res) => {
+  res.status(405).json({ 
+    status: 'error', 
+    message: 'Login requires a POST request with credentials. Please use the login form.' 
+  });
+});
 
 // Student Routes
 app.get('/api/result/get', authenticateToken, ResultController.getResult);

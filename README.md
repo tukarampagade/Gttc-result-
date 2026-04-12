@@ -61,6 +61,11 @@ To deploy this application to a production server (e.g., VPS, Heroku, AWS):
 ## Admin Credentials
 - **Email:** `tukarampagade781@gmail.com`
 - **Password:** `************`
+- 
+- ## USED IN AT
+- **CLAUED AI**
+- **GEMINI.GOOGLE AI**
+- **DEEP SEEK**
 
 ## Created By
 Tukaram Pagade

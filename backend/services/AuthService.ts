@@ -150,7 +150,7 @@ export class AuthService {
       StudentRepository.save({
         regNo: s.regNo,
         name: s.name,
-        department: 'DAIML – Data Science & AI/ML',
+        department: 'Artificial Intelligence & Machine Learning',
         semester: 3,
         status: 'Active',
         password

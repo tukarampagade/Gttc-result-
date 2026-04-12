@@ -24,14 +24,14 @@ async function loadResult(specificSemester) {
         const semester = specificSemester ? `${specificSemester}${getOrdinal(specificSemester)} Semester` : (localStorage.getItem('selectedSemester') || '3rd Semester');
 
         const subjects = [
-            { name: 'Advanced Math for AI', code: '24AI41T', ia: r.subject1_ia, e: r.subject1_e, marks: r.subject1_t, max: 120 },
-            { name: 'Data Warehousing', code: '24AI42T', ia: r.subject2_ia, e: r.subject2_e, marks: r.subject2_t, max: 120 },
-            { name: 'Machine Learning', code: '24AI43T', ia: r.subject3_ia, e: r.subject3_e, marks: r.subject3_t, max: 120 },
-            { name: 'Deep Learning', code: '24AI44T', ia: r.subject4_ia, e: r.subject4_e, marks: r.subject4_t, max: 120 },
-            { name: 'ML Lab', code: '24AI45P', ia: r.subject5_ia, e: r.subject5_e, marks: r.subject5_t, max: 120 },
-            { name: 'Data Science Lab', code: '24AI46P', ia: r.subject6_ia, e: r.subject6_e, marks: r.subject6_t, max: 120 },
-            { name: 'Deep Learning Lab', code: '24AI47P', ia: r.subject7_ia, e: r.subject7_e, marks: r.subject7_t, max: 120 },
-            { name: 'Mini Project', code: '24AI48P', ia: r.subject8_ia, e: r.subject8_e, marks: r.subject8_t, max: 120 }
+            { name: 'EM for AI', code: '24AI31T', ia: r.subject1_ia, e: r.subject1_e, marks: r.subject1_t, max: 120 },
+            { name: 'PY. Programming', code: '24AI32T', ia: r.subject2_ia, e: r.subject2_e, marks: r.subject2_t, max: 120 },
+            { name: 'OOPS with C++', code: '24AI33T', ia: r.subject3_ia, e: r.subject3_e, marks: r.subject3_t, max: 120 },
+            { name: 'Intro. to MC & ES', code: '24AI34T', ia: r.subject4_ia, e: r.subject4_e, marks: r.subject4_t, max: 120 },
+            { name: 'C++ Lab', code: '24AI35P', ia: r.subject5_ia, e: r.subject5_e, marks: r.subject5_t, max: 120 },
+            { name: 'PY. Programming Lab', code: '24AI36P', ia: r.subject6_ia, e: r.subject6_e, marks: r.subject6_t, max: 120 },
+            { name: 'Microcontroller Lab', code: '24AI37P', ia: r.subject7_ia, e: r.subject7_e, marks: r.subject7_t, max: 120 },
+            { name: 'DBMS', code: '24AI38P', ia: r.subject8_ia, e: r.subject8_e, marks: r.subject8_t, max: 120 }
         ];
 
         const getGrade = (marks, max) => {

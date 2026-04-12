@@ -1,7 +1,6 @@
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
-const pdf = typeof pdfParse === 'function' ? pdfParse : (pdfParse.default || pdfParse);
 const bcrypt = require('bcryptjs');
 
 import { ResultService } from './ResultService.js';
@@ -9,6 +8,10 @@ import { StudentRepository, AuditRepository } from '../repositories/repositories
 
 export class PdfService {
   static async parseAndStore(buffer: Buffer, adminEmail: string) {
+    const pdf = typeof pdfParse === 'function' ? pdfParse : (pdfParse.default || pdfParse);
+    if (typeof pdf !== 'function') {
+      throw new Error('PDF parsing library failed to load correctly.');
+    }
     const data = await pdf(buffer);
     const text = data.text as string;
 

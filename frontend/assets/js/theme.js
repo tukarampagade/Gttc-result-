@@ -17,6 +17,12 @@ async function applyTheme() {
 
             const rgbaPrimary = hexToRgba(color, 0.1);
             const rgbaPrimaryStrong = hexToRgba(color, 0.2);
+            
+            // Convert hex to rgb for Tailwind variables
+            const r = parseInt(color.slice(1, 3), 16);
+            const g = parseInt(color.slice(3, 5), 16);
+            const b = parseInt(color.slice(5, 7), 16);
+            const rgb = `${r}, ${g}, ${b}`;
 
             // Inject dynamic styles
             let styleTag = document.getElementById('dynamic-theme-style');
@@ -26,9 +32,13 @@ async function applyTheme() {
                 document.head.appendChild(styleTag);
             }
             
+            document.documentElement.style.setProperty('--primary-color', color);
+            document.documentElement.style.setProperty('--primary-rgb', rgb);
+            
             styleTag.innerHTML = `
                 :root {
                     --primary-color: ${color};
+                    --primary-rgb: ${rgb};
                     --primary-hover: ${hexToRgba(color, 0.8)};
                     --sidebar-bg: ${color};
                 }
@@ -99,6 +109,11 @@ function updateThemeLocally(color) {
     };
     const rgbaPrimary = hexToRgba(color, 0.1);
     const rgbaPrimaryStrong = hexToRgba(color, 0.2);
+    
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    const rgb = `${r}, ${g}, ${b}`;
 
     let styleTag = document.getElementById('dynamic-theme-style');
     if (!styleTag) {
@@ -108,10 +123,12 @@ function updateThemeLocally(color) {
     }
     
     document.documentElement.style.setProperty('--primary-color', color);
+    document.documentElement.style.setProperty('--primary-rgb', rgb);
     
     styleTag.innerHTML = `
         :root {
             --primary-color: ${color};
+            --primary-rgb: ${rgb};
             --primary-hover: ${hexToRgba(color, 0.8)};
             --sidebar-bg: ${color};
         }

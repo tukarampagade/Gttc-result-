@@ -16,6 +16,22 @@
     border-color: var(--primary-hover) !important;
 }
 
+.login-card {
+    max-width: 500px;
+    border: none;
+    border-radius: 2rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 576px) {
+    .card-body {
+        padding: 2rem !important;
+    }
+    h2 {
+        font-size: 1.25rem !important;
+    }
+}
+
 /* Dark Mode Styles */
 body.dark-mode {
     background-color: #0f172a !important;

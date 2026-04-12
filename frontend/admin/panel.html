@@ -11,6 +11,8 @@
     <style>
         :root {
             --sidebar-width: 260px;
+            --primary-color: #2563eb;
+            --primary-rgb: 37, 99, 235;
         }
         body {
             background-color: #f8fafc !important;
@@ -23,7 +25,7 @@
             top: 0;
             background: #0f172a;
             color: white;
-            z-index: 1000;
+            z-index: 1050;
             transition: all 0.3s;
         }
         .main-content {
@@ -32,6 +34,50 @@
             padding: 2rem;
             transition: all 0.3s;
         }
+        /* Mobile Sidebar Toggle */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1040;
+        }
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1060;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                left: calc(-1 * var(--sidebar-width));
+            }
+            .sidebar.show {
+                left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 4rem 1rem 1rem 1rem;
+            }
+            .mobile-toggle {
+                display: block;
+            }
+            .sidebar-overlay.show {
+                display: block;
+            }
+        }
+
         .nav-link {
             color: rgba(255,255,255,0.7) !important;
             padding: 0.6rem 1.2rem !important;
@@ -53,9 +99,20 @@
             color: white !important;
         }
         .nav-link.active {
-            background: #2563eb !important;
+            background: var(--primary-color) !important;
             color: white !important;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-primary:hover {
+            background-color: rgba(var(--primary-rgb), 0.9);
+            border-color: rgba(var(--primary-rgb), 0.9);
+        }
+        .text-primary {
+            color: var(--primary-color) !important;
         }
         .stat-card {
             border: none;
@@ -119,7 +176,12 @@
     </style>
 </head>
 <body>
-    <div class="sidebar">
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list fs-4"></i>
+    </button>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <div class="sidebar" id="sidebar">
         <div class="p-4 mb-2">
             <div class="d-flex align-items-center gap-3 p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
                 <div class="bg-white rounded-3 p-2 shadow-sm d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
@@ -145,7 +207,7 @@
                 <i class="bi bi-clock-history"></i> Result History
             </a>
             <a class="nav-link" href="#" onclick="showSection('upload')">
-                <i class="bi bi-cloud-upload-fill"></i> CSV Upload
+                <i class="bi bi-cloud-upload-fill"></i> Upload Data
             </a>
             <a class="nav-link" href="#" onclick="showSection('audit')">
                 <i class="bi bi-journal-text"></i> Audit Logs
@@ -480,8 +542,8 @@
                             <i class="bi bi-arrow-clockwise"></i> Refresh
                         </button>
                     </div>
-                    <div class="card">
-                        <div class="card-body">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
                             <div class="table-responsive">
                                 <table class="table table-hover" id="auditTable">
                                     <thead>

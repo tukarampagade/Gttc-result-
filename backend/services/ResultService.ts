@@ -66,7 +66,8 @@ export class ResultService {
     const totals = subjectMarks.map(m => (m.ia || 0) + (m.e || 0));
     const total = ResultCalculator.calculateTotal(totals);
     const avg = ResultCalculator.calculateAvg(total, totals.length);
-    const resultStatus = PassFailLogic.getResult(subjectMarks);
+    const semester = data.semester || 3;
+    const resultStatus = PassFailLogic.getResult(subjectMarks, semester);
 
     const resultData = {
       ...data,
@@ -78,7 +79,7 @@ export class ResultService {
       subject6_t: totals[5],
       subject7_t: totals[6],
       subject8_t: totals[7],
-      semester: data.semester || 3,
+      semester,
       total,
       avg,
       result: resultStatus

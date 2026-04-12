@@ -52,9 +52,9 @@ export class AdminService {
     return result;
   }
 
-  static getStudents(page: number = 1, limit: number = 10, status?: string, sort: string = 'regNo', order: string = 'ASC') {
-    const students = StudentRepository.findAll(page, limit, status, sort, order);
-    const total = StudentRepository.count(status);
+  static getStudents(page: number = 1, limit: number = 10, status?: string, sort: string = 'regNo', order: string = 'ASC', search?: string) {
+    const students = StudentRepository.findAll(page, limit, status, sort, order, search);
+    const total = StudentRepository.count(status, search);
     return {
       data: students,
       pagination: {
@@ -66,9 +66,9 @@ export class AdminService {
     };
   }
 
-  static getResults(page: number = 1, limit: number = 10, semester?: number, status?: string) {
-    const results = ResultRepository.findAll(page, limit, semester, status);
-    const total = ResultRepository.count(semester, status);
+  static getResults(page: number = 1, limit: number = 10, semester?: number, status?: string, search?: string) {
+    const results = ResultRepository.findAll(page, limit, semester, status, search);
+    const total = ResultRepository.count(semester, status, search);
     return {
       data: results,
       pagination: {
@@ -81,18 +81,21 @@ export class AdminService {
   }
 
   static getAnalytics() {
-    const students = StudentRepository.findAll();
-    const results = ResultRepository.findAll();
+    const totalStudents = StudentRepository.count();
+    const totalResults = ResultRepository.count();
     
-    const totalStudents = students.length;
-    const totalResults = results.length;
-    const passed = results.filter((r: any) => r.result === 'PASS').length;
+    const allStudents = StudentRepository.getAll();
+    const allResults = ResultRepository.getAll();
+    
+    const passed = allResults.filter((r: any) => r.result === 'PASS').length;
     const failed = totalResults - passed;
 
     // Grade Distribution
     const grades = { 'A+': 0, 'A': 0, 'B+': 0, 'B': 0, 'C+': 0, 'D': 0, 'F': 0 };
-    results.forEach((r: any) => {
-      const p = (r.total / 960) * 100;
+    allResults.forEach((r: any) => {
+      // Use 960 as default max for 3rd sem, 910 for 2nd sem
+      const maxPossible = r.semester == 2 ? 910 : 960;
+      const p = (r.total / maxPossible) * 100;
       if (p >= 90) grades['A+']++;
       else if (p >= 80) grades['A']++;
       else if (p >= 70) grades['B+']++;
@@ -104,8 +107,8 @@ export class AdminService {
 
     // Department-wise Pass Rate
     const deptStats: any = {};
-    results.forEach((r: any) => {
-      const student: any = students.find((s: any) => s.regNo === r.regNo);
+    allResults.forEach((r: any) => {
+      const student: any = allStudents.find((s: any) => s.regNo === r.regNo);
       if (student && student.department) {
         if (!deptStats[student.department]) {
           deptStats[student.department] = { total: 0, passed: 0 };

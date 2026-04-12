@@ -37,9 +37,10 @@ export class AdminController {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const status = req.query.status as string;
+      const search = req.query.search as string;
       const sort = req.query.sort as string || 'regNo';
       const order = req.query.order as string || 'ASC';
-      const students = AdminService.getStudents(page, limit, status, sort, order);
+      const students = AdminService.getStudents(page, limit, status, sort, order, search);
       res.json(ApiResponse.ok('Students retrieved', students));
     } catch (error: any) {
       res.status(400).json(ApiResponse.error(error.message));
@@ -80,7 +81,8 @@ export class AdminController {
       const limit = parseInt(req.query.limit as string) || 10;
       const semester = req.query.semester ? parseInt(req.query.semester as string) : undefined;
       const status = req.query.status as string;
-      const results = AdminService.getResults(page, limit, semester, status);
+      const search = req.query.search as string;
+      const results = AdminService.getResults(page, limit, semester, status, search);
       res.json(ApiResponse.ok('Results retrieved', results));
     } catch (error: any) {
       res.status(400).json(ApiResponse.error(error.message));

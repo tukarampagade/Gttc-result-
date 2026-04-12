@@ -19,14 +19,24 @@ export class StudentRepository {
     return db.prepare('DELETE FROM students WHERE regNo = ?').run(regNo);
   }
 
-  static findAll(page: number = 1, limit: number = 10, status?: string, sort: string = 'regNo', order: string = 'ASC') {
+  static findAll(page: number = 1, limit: number = 10, status?: string, sort: string = 'regNo', order: string = 'ASC', search?: string) {
     const offset = (page - 1) * limit;
     let query = 'SELECT * FROM students';
     const params: any[] = [];
+    const conditions: string[] = [];
 
     if (status) {
-      query += ' WHERE status = ?';
+      conditions.push('status = ?');
       params.push(status);
+    }
+
+    if (search) {
+      conditions.push('(regNo LIKE ? OR name LIKE ?)');
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
     }
 
     // Validate sort column to prevent SQL injection
@@ -40,16 +50,30 @@ export class StudentRepository {
     return db.prepare(query).all(...params);
   }
 
-  static count(status?: string) {
+  static count(status?: string, search?: string) {
     let query = 'SELECT COUNT(*) as count FROM students';
     const params: any[] = [];
+    const conditions: string[] = [];
 
     if (status) {
-      query += ' WHERE status = ?';
+      conditions.push('status = ?');
       params.push(status);
     }
 
+    if (search) {
+      conditions.push('(regNo LIKE ? OR name LIKE ?)');
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+
     return (db.prepare(query).get(...params) as any).count;
+  }
+
+  static getAll() {
+    return db.prepare('SELECT * FROM students').all();
   }
 
   static findByDepartment(dept: string) {
@@ -108,9 +132,20 @@ export class ResultRepository {
     );
   }
 
-  static findAll(page: number = 1, limit: number = 10, semester?: number, status?: string) {
+  static findAll(page: number = 1, limit: number = 10, semester?: number, status?: string, search?: string) {
     const offset = (page - 1) * limit;
-    let query = 'SELECT r.*, s.status as studentStatus FROM results r JOIN students s ON r.regNo = s.regNo';
+    let query = `
+      SELECT r.*, s.name as studentName, s.department, s.status as studentStatus,
+      (
+        SELECT COUNT(*) + 1 
+        FROM results r2 
+        JOIN students s2 ON r2.regNo = s2.regNo 
+        WHERE s2.department = s.department 
+        AND r2.semester = r.semester 
+        AND r2.total > r.total
+      ) as rank
+      FROM results r 
+      JOIN students s ON r.regNo = s.regNo`;
     const params: any[] = [];
     const conditions: string[] = [];
 
@@ -124,6 +159,11 @@ export class ResultRepository {
       params.push(status);
     }
 
+    if (search) {
+      conditions.push('(r.regNo LIKE ? OR s.name LIKE ?)');
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
     if (conditions.length > 0) {
       query += ' WHERE ' + conditions.join(' AND ');
     }
@@ -134,7 +174,7 @@ export class ResultRepository {
     return db.prepare(query).all(...params);
   }
 
-  static count(semester?: number, status?: string) {
+  static count(semester?: number, status?: string, search?: string) {
     let query = 'SELECT COUNT(*) as count FROM results r JOIN students s ON r.regNo = s.regNo';
     const params: any[] = [];
     const conditions: string[] = [];
@@ -149,11 +189,20 @@ export class ResultRepository {
       params.push(status);
     }
 
+    if (search) {
+      conditions.push('(r.regNo LIKE ? OR s.name LIKE ?)');
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
     if (conditions.length > 0) {
       query += ' WHERE ' + conditions.join(' AND ');
     }
 
     return (db.prepare(query).get(...params) as any).count;
+  }
+
+  static getAll() {
+    return db.prepare('SELECT * FROM results').all();
   }
 
   static deleteByRegNo(regNo: string) {

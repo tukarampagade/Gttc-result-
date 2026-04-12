@@ -15,6 +15,9 @@ export class OfficeService {
     const recordRegex = /(\d{1,3})\s+(\d{7})\s+([A-Z\s\.\-\']+?)\s+([A-Z\s\.\-\']+?)\s+((?:(?:(?:\d{1,3}|AB)\s+){3}){8})(\d{1,4})\s+(PASS|FAIL)/gi;
     
     const matches = Array.from(text.matchAll(recordRegex));
+    if (matches.length === 0) {
+      throw new Error('No valid student records found in the document. Please ensure the file follows the required provisional result sheet format.');
+    }
     const results: any[] = [];
 
     for (const match of matches) {

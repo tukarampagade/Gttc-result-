@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/assets/css/themes.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root {
             --sidebar-width: 260px;
@@ -273,15 +275,18 @@
                     <h3 class="fw-bold">Manage Students</h3>
                     <p class="text-muted" id="studentCountText">0 total students</p>
                 </div>
-                <div class="d-flex gap-2">
-                    <div class="dropdown">
-                        <button class="btn btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            Bulk Actions
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" onclick="bulkUpdateStudentStatus('Active')"><i class="bi bi-check-circle text-success me-2"></i>Mark as Active</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="bulkUpdateStudentStatus('Inactive')"><i class="bi bi-x-circle text-secondary me-2"></i>Mark as Inactive</a></li>
-                        </ul>
+                <div class="d-flex gap-2 align-items-center">
+                    <div id="studentBulkActions" class="d-flex align-items-center gap-2" style="display: none !important;">
+                        <span class="badge bg-primary rounded-pill px-3 py-2" id="selectedStudentsCount">0 selected</span>
+                        <div class="dropdown">
+                            <button class="btn btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                Bulk Actions
+                            </button>
+                            <ul class="dropdown-menu shadow-sm">
+                                <li><a class="dropdown-item" href="#" onclick="bulkUpdateStudentStatus('Active')"><i class="bi bi-check-circle text-success me-2"></i>Mark as Active</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="bulkUpdateStudentStatus('Inactive')"><i class="bi bi-x-circle text-secondary me-2"></i>Mark as Inactive</a></li>
+                            </ul>
+                        </div>
                     </div>
                     <button class="btn btn-light border" onclick="loadStudents()">
                         <i class="bi bi-arrow-clockwise"></i> Refresh
@@ -425,6 +430,7 @@
                                 <th>Student</th>
                                 <th>Semester</th>
                                 <th>Marks</th>
+                                <th>Rank</th>
                                 <th>Grade</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -498,8 +504,9 @@
                             <p class="text-muted small mb-4">Upload student results in bulk using a CSV file. Download the sample to see the format.</p>
                             
                             <div class="mb-4">
-                                <label class="form-label small fw-bold">Select CSV File</label>
-                                <input type="file" class="form-control" id="csvFileInput" accept=".csv">
+                                <label for="csvFileInput" class="form-label small fw-bold">Select CSV File</label>
+                                <input type="file" class="form-control" id="csvFileInput" accept=".csv" aria-describedby="csvHelp">
+                                <div id="csvHelp" class="form-text">Upload results in CSV format.</div>
                             </div>
                             
                             <div class="d-flex gap-2">
@@ -521,8 +528,9 @@
                             <p class="text-muted small mb-4">Upload a PDF, Word (.docx), or PowerPoint (.pptx) result sheet to automatically extract and store student marks.</p>
                             
                             <div class="mb-4">
-                                <label class="form-label small fw-bold">Select Document File</label>
-                                <input type="file" class="form-control" id="pdfFileInput" accept=".pdf,.docx,.pptx">
+                                <label for="pdfFileInput" class="form-label small fw-bold">Select Document File</label>
+                                <input type="file" class="form-control" id="pdfFileInput" accept=".pdf,.docx,.pptx" aria-describedby="pdfHelp">
+                                <div id="pdfHelp" class="form-text">Upload PDF or Word documents.</div>
                             </div>
                             
                             <button class="btn btn-danger px-4" id="processDocBtn" onclick="uploadPDF()">
@@ -618,20 +626,20 @@
                     <form id="addStudentForm">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Register Number</label>
-                                <input type="text" class="form-control" id="newRegNo" required>
+                                <label for="newRegNo" class="form-label">Register Number</label>
+                                <input type="text" class="form-control" id="newRegNo" required aria-required="true">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="newName" required>
+                                <label for="newName" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="newName" required aria-required="true">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Email</label>
+                                <label for="newEmail" class="form-label">Email</label>
                                 <input type="email" class="form-control" id="newEmail">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Department</label>
-                                <select class="form-select" id="newDepartment">
+                                <label for="newDepartment" class="form-label">Department</label>
+                                <select class="form-select" id="newDepartment" aria-label="Select Department">
                                     <option value="Artificial Intelligence">Artificial Intelligence</option>
                                     <option value="Mechanical Engineering">Mechanical Engineering</option>
                                     <option value="Mechatronics">Mechatronics</option>
@@ -639,16 +647,16 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Semester</label>
+                                <label for="newSemester" class="form-label">Semester</label>
                                 <input type="number" class="form-control" id="newSemester" value="1">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">DOB</label>
+                                <label for="newDob" class="form-label">DOB</label>
                                 <input type="date" class="form-control" id="newDob">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Status</label>
-                                <select class="form-select" id="newStatus">
+                                <label for="newStatus" class="form-label">Status</label>
+                                <select class="form-select" id="newStatus" aria-label="Select Status">
                                     <option value="Active">Active</option>
                                     <option value="Inactive">Inactive</option>
                                 </select>
@@ -674,20 +682,20 @@
                         <input type="hidden" id="editRegNoHidden">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Register Number (Read-only)</label>
+                                <label for="editRegNo" class="form-label">Register Number (Read-only)</label>
                                 <input type="text" class="form-control" id="editRegNo" disabled>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="editName" required>
+                                <label for="editName" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="editName" required aria-required="true">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Email</label>
+                                <label for="editEmail" class="form-label">Email</label>
                                 <input type="email" class="form-control" id="editEmail">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Department</label>
-                                <select class="form-select" id="editDepartment">
+                                <label for="editDepartment" class="form-label">Department</label>
+                                <select class="form-select" id="editDepartment" aria-label="Select Department">
                                     <option value="Artificial Intelligence">Artificial Intelligence</option>
                                     <option value="Mechanical Engineering">Mechanical Engineering</option>
                                     <option value="Mechatronics">Mechatronics</option>
@@ -695,16 +703,16 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Semester</label>
+                                <label for="editSemester" class="form-label">Semester</label>
                                 <input type="number" class="form-control" id="editSemester">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">DOB</label>
+                                <label for="editDob" class="form-label">DOB</label>
                                 <input type="date" class="form-control" id="editDob">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Status</label>
-                                <select class="form-select" id="editStatus">
+                                <label for="editStatus" class="form-label">Status</label>
+                                <select class="form-select" id="editStatus" aria-label="Select Status">
                                     <option value="Active">Active</option>
                                     <option value="Inactive">Inactive</option>
                                 </select>
@@ -730,8 +738,8 @@
                         <input type="hidden" id="editResultRegNo">
                         <div class="row g-3">
                             <div class="col-md-12">
-                                <label class="form-label">Semester</label>
-                                <select class="form-select" id="res_semester" required>
+                                <label for="res_semester" class="form-label">Semester</label>
+                                <select class="form-select" id="res_semester" required aria-required="true">
                                     <option value="1">1st Semester</option>
                                     <option value="2">2nd Semester</option>
                                     <option value="3">3rd Semester</option>
@@ -743,75 +751,75 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">EM for AI (24AI31T)</label>
+                                <label for="res_subject1_ia" class="form-label small fw-bold">EM for AI (24AI31T)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
-                                    <input type="number" class="form-control" id="res_subject1_ia" placeholder="IA" required>
+                                    <input type="number" class="form-control" id="res_subject1_ia" placeholder="IA" required aria-required="true">
                                     <span class="input-group-text">E</span>
-                                    <input type="number" class="form-control" id="res_subject1_e" placeholder="Exam" required>
+                                    <input type="number" class="form-control" id="res_subject1_e" placeholder="Exam" required aria-required="true">
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">PY. Programming (24AI32T)</label>
+                                <label for="res_subject2_ia" class="form-label small fw-bold">PY. Programming (24AI32T)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
-                                    <input type="number" class="form-control" id="res_subject2_ia" placeholder="IA" required>
+                                    <input type="number" class="form-control" id="res_subject2_ia" placeholder="IA" required aria-required="true">
                                     <span class="input-group-text">E</span>
-                                    <input type="number" class="form-control" id="res_subject2_e" placeholder="Exam" required>
+                                    <input type="number" class="form-control" id="res_subject2_e" placeholder="Exam" required aria-required="true">
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">OOPS with C++ (24AI33T)</label>
+                                <label for="res_subject3_ia" class="form-label small fw-bold">OOPS with C++ (24AI33T)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
-                                    <input type="number" class="form-control" id="res_subject3_ia" placeholder="IA" required>
+                                    <input type="number" class="form-control" id="res_subject3_ia" placeholder="IA" required aria-required="true">
                                     <span class="input-group-text">E</span>
-                                    <input type="number" class="form-control" id="res_subject3_e" placeholder="Exam" required>
+                                    <input type="number" class="form-control" id="res_subject3_e" placeholder="Exam" required aria-required="true">
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">Intro. to MC & ES (24AI34T)</label>
+                                <label for="res_subject4_ia" class="form-label small fw-bold">Intro. to MC & ES (24AI34T)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
-                                    <input type="number" class="form-control" id="res_subject4_ia" placeholder="IA" required>
+                                    <input type="number" class="form-control" id="res_subject4_ia" placeholder="IA" required aria-required="true">
                                     <span class="input-group-text">E</span>
-                                    <input type="number" class="form-control" id="res_subject4_e" placeholder="Exam" required>
+                                    <input type="number" class="form-control" id="res_subject4_e" placeholder="Exam" required aria-required="true">
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">C++ Lab (24AI35P)</label>
+                                <label for="res_subject5_ia" class="form-label small fw-bold">C++ Lab (24AI35P)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
-                                    <input type="number" class="form-control" id="res_subject5_ia" placeholder="IA" required>
+                                    <input type="number" class="form-control" id="res_subject5_ia" placeholder="IA" required aria-required="true">
                                     <span class="input-group-text">E</span>
-                                    <input type="number" class="form-control" id="res_subject5_e" placeholder="Exam" required>
+                                    <input type="number" class="form-control" id="res_subject5_e" placeholder="Exam" required aria-required="true">
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">PY. Programming Lab (24AI36P)</label>
+                                <label for="res_subject6_ia" class="form-label small fw-bold">PY. Programming Lab (24AI36P)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
-                                    <input type="number" class="form-control" id="res_subject6_ia" placeholder="IA" required>
+                                    <input type="number" class="form-control" id="res_subject6_ia" placeholder="IA" required aria-required="true">
                                     <span class="input-group-text">E</span>
-                                    <input type="number" class="form-control" id="res_subject6_e" placeholder="Exam" required>
+                                    <input type="number" class="form-control" id="res_subject6_e" placeholder="Exam" required aria-required="true">
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">Microcontroller Lab (24AI37P)</label>
+                                <label for="res_subject7_ia" class="form-label small fw-bold">Microcontroller Lab (24AI37P)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
-                                    <input type="number" class="form-control" id="res_subject7_ia" placeholder="IA" required>
+                                    <input type="number" class="form-control" id="res_subject7_ia" placeholder="IA" required aria-required="true">
                                     <span class="input-group-text">E</span>
-                                    <input type="number" class="form-control" id="res_subject7_e" placeholder="Exam" required>
+                                    <input type="number" class="form-control" id="res_subject7_e" placeholder="Exam" required aria-required="true">
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">DBMS (24AI38P)</label>
+                                <label for="res_subject8_ia" class="form-label small fw-bold">DBMS (24AI38P)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">IA</span>
-                                    <input type="number" class="form-control" id="res_subject8_ia" placeholder="IA" required>
+                                    <input type="number" class="form-control" id="res_subject8_ia" placeholder="IA" required aria-required="true">
                                     <span class="input-group-text">E</span>
-                                    <input type="number" class="form-control" id="res_subject8_e" placeholder="Exam" required>
+                                    <input type="number" class="form-control" id="res_subject8_e" placeholder="Exam" required aria-required="true">
                                 </div>
                             </div>
                         </div>

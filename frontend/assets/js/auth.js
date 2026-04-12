@@ -49,3 +49,19 @@ document.getElementById('adminLoginForm')?.addEventListener('submit', async (e) 
         message.innerHTML = `<div class="alert alert-danger py-2 small">${err.message}</div>`;
     }
 });
+
+// Password Toggle Logic
+document.getElementById('togglePassword')?.addEventListener('click', function() {
+    const passwordInput = document.getElementById('password');
+    const icon = document.getElementById('toggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
+});

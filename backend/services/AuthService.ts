@@ -145,6 +145,53 @@ export class AuthService {
       { regNo: '8080157', name: 'VIKAS MAHANTESH YAMAKANAMARDI', marks: [[40,10],[40,30],[46,42],[56,20],[42,0],[42,0],[42,0],[38,43]] }
     ];
 
+    const secondSemResults = [
+      { regNo: '8080101', name: 'ABHINANDAN NAMDEV JADHAV', marks: [[67,48],[63,49],[68,45],[55,47],[67,49],[69,50],[63,33],[35,0]] },
+      { regNo: '8080102', name: 'ADINATH B VASULKAR', marks: [[54,29],[49,46],[52,25],[54,48],[48,48],[64,42],[62,32],[42,0]] },
+      { regNo: '8080103', name: 'ADITYA DEELIP GODASE', marks: [[35,25],[43,33],[38,27],[35,25],[38,30],[36,27],[35,31],[35,0]] },
+      { regNo: '8080104', name: 'ADITYA SHRINIVAS SARODE', marks: [[60,43],[55,48],[62,30],[36,28],[63,47],[68,45],[53,43],[43,0]] },
+      { regNo: '8080105', name: 'ANKIT BAGEWADI', marks: [[35,0],[35,0],[35,0],[35,0],[35,0],[35,0],[35,0],[35,0]] },
+      { regNo: '8080106', name: 'ANKIT MALLIKARJUN GAVIMATH', marks: [[35,0],[35,0],[35,0],[35,0],[35,0],[35,0],[35,25],[35,0]] },
+      { regNo: '8080107', name: 'ARIHANT DEVENDRA PATIL', marks: [[37,18],[39,25],[41,26],[37,28],[40,31],[52,32],[51,25],[41,0]] },
+      { regNo: '8080108', name: 'ARUN RAJENDRA BHAGANNAVAR', marks: [[44,33],[43,32],[46,31],[35,25],[38,33],[47,37],[46,25],[35,0]] },
+      { regNo: '8080109', name: 'ARUN SHANKAR RAVAL', marks: [[35,0],[35,0],[35,0],[35,0],[35,0],[35,0],[35,0],[35,0]] },
+      { regNo: '8080110', name: 'ATHARV SHETTY', marks: [[56,46],[63,48],[67,48],[52,44],[65,49],[69,50],[47,37],[50,0]] },
+      { regNo: '8080111', name: 'BALAPPA GUNDU DODDAKALLANNAVAR', marks: [[68,39],[65,50],[66,34],[51,38],[59,47],[68,42],[45,34],[37,0]] },
+      { regNo: '8080113', name: 'DARSHAN LAXMAN GUNJETKAR', marks: [[35,0],[35,0],[35,0],[35,0],[35,0],[35,0],[35,0],[35,0]] },
+      { regNo: '8080114', name: 'H FHIMUDDIN', marks: [[35,19],[39,17],[39,20],[36,28],[37,32],[37,27],[35,25],[35,0]] },
+      { regNo: '8080115', name: 'HARSH PATIL', marks: [[56,30],[54,42],[53,28],[52,47],[58,45],[68,42],[47,29],[44,0]] },
+      { regNo: '8080116', name: 'JILANI SHABBIR VAKKUND', marks: [[35,0],[35,0],[35,0],[35,0],[35,0],[35,0],[35,0],[35,0]] },
+      { regNo: '8080117', name: 'KHUSHI TARALE', marks: [[50,47],[53,46],[65,35],[51,45],[51,45],[68,37],[44,34],[38,0]] },
+      { regNo: '8080118', name: 'MAHALAKSHMEE MANJUNATH BADIGER', marks: [[50,33],[51,45],[53,36],[51,41],[59,43],[65,40],[50,37],[48,0]] },
+      { regNo: '8080119', name: 'MAHESH MAHADEV NESARKAR', marks: [[35,10],[42,25],[39,25],[35,25],[38,25],[43,30],[35,25],[45,0]] },
+      { regNo: '8080120', name: 'MEHRUNBEE DASTGEER MULLA', marks: [[57,48],[54,50],[65,46],[55,46],[65,49],[69,48],[69,49],[36,0]] },
+      { regNo: '8080121', name: 'MOHAMADANIYAZ JAKIRHUSEN BAGAWAN', marks: [[70,48],[69,49],[70,44],[59,47],[69,50],[69,50],[70,49],[37,0]] },
+      { regNo: '8080122', name: 'MOHAMMADIBRAHIM FAROOQ BASARIKATTI', marks: [[42,27],[42,40],[48,25],[48,35],[39,43],[56,38],[41,30],[40,0]] },
+      { regNo: '8080123', name: 'NAGAVENI PATIL', marks: [[58,45],[65,50],[63,40],[49,40],[62,50],[69,45],[58,42],[55,0]] },
+      { regNo: '8080124', name: 'NAVEED DAFEDAR', marks: [[35,27],[38,17],[38,30],[35,25],[36,34],[52,32],[35,25],[45,0]] },
+      { regNo: '8080125', name: 'NAVEENKUMAR NAGARAJ SARAVARI', marks: [[35,10],[37,8],[37,12],[35,25],[35,25],[35,25],[35,30],[35,0]] },
+      { regNo: '8080126', name: 'PRAJWAL RAJU GADIWADDAR', marks: [[35,38],[43,30],[51,33],[35,25],[37,42],[51,42],[42,34],[35,0]] },
+      { regNo: '8080127', name: 'RAKSHITA RAMESH KAMBLE', marks: [[50,40],[43,42],[50,33],[51,42],[54,43],[56,32],[46,35],[35,0]] },
+      { regNo: '8080128', name: 'SALONI BELGAONKAR', marks: [[55,38],[47,37],[60,31],[56,35],[55,48],[67,40],[42,37],[48,0]] },
+      { regNo: '8080129', name: 'SAMARTH NARAYAN SUNTHAKAR', marks: [[60,38],[59,50],[67,36],[53,42],[62,45],[59,50],[51,25],[39,0]] },
+      { regNo: '8080130', name: 'SANAN ASIF MOMIN', marks: [[35,29],[39,34],[41,32],[35,25],[37,39],[57,40],[44,36],[42,0]] },
+      { regNo: '8080132', name: 'SANKET GOVINDRAY MESTA', marks: [[35,39],[39,43],[49,34],[36,26],[37,28],[37,25],[25,39],[35,0]] },
+      { regNo: '8080133', name: 'SANKET NARAYAN TAMMANACHE', marks: [[35,31],[38,25],[44,31],[35,25],[37,0],[42,25],[40,28],[43,0]] },
+      { regNo: '8080134', name: 'SATISH SHASHIKUMAR CHIMANAPPAGOL', marks: [[35,30],[38,33],[41,29],[35,25],[37,34],[51,30],[35,25],[45,0]] },
+      { regNo: '8080135', name: 'SHREEHARI SANADI', marks: [[38,26],[38,33],[39,33],[35,25],[37,35],[48,30],[35,25],[35,0]] },
+      { regNo: '8080136', name: 'SHREYAS KISAN NILAJKAR', marks: [[35,25],[39,33],[38,32],[35,25],[37,30],[38,30],[35,25],[50,0]] },
+      { regNo: '8080137', name: 'SOURABH NARAYAN APTEKAR', marks: [[35,20],[38,4],[38,30],[35,25],[37,0],[37,25],[35,25],[35,0]] },
+      { regNo: '8080138', name: 'SUDEEP MAHESH HUCHCHARAYAPPAGOL', marks: [[37,26],[38,28],[42,27],[37,27],[36,43],[36,30],[35,0],[36,0]] },
+      { regNo: '8080139', name: 'SURAJ YALLAPPA BHANDARI', marks: [[35,29],[39,25],[38,27],[35,27],[36,38],[42,32],[35,28],[35,0]] },
+      { regNo: '8080140', name: 'SWAYAM SANDEEP ROKADE', marks: [[35,27],[43,30],[59,30],[36,25],[37,35],[43,40],[35,25],[35,0]] },
+      { regNo: '8080141', name: 'TEJAS CHANDRAKANT PATHARVAT', marks: [[35,27],[39,27],[39,27],[38,25],[39,39],[58,31],[35,31],[44,0]] },
+      { regNo: '8080142', name: 'TUKARAM PRAKASH PAGADE', marks: [[50,39],[52,45],[56,36],[54,42],[58,43],[68,46],[45,37],[46,0]] },
+      { regNo: '8080144', name: 'VIGNESH NARASIMHA BALLARI', marks: [[36,0],[35,0],[42,0],[35,25],[35,0],[35,0],[35,0],[35,0]] },
+      { regNo: '8080146', name: 'AKASH N SHINGANNAVAR', marks: [[35,16],[40,11],[42,25],[36,25],[38,0],[37,28],[47,25],[42,0]] },
+      { regNo: '8080147', name: 'MOHAMMAD TAHIR ABDUL BASIT SOUDAGAR', marks: [[35,13],[39,25],[46,25],[35,25],[35,34],[39,30],[61,32],[38,0]] },
+      { regNo: '8080149', name: 'NEIL SHAHAPETI', marks: [[35,12],[40,13],[38,14],[35,25],[36,25],[36,25],[35,25],[37,0]] }
+    ];
+
     for (const s of pdfStudents) {
       const password = await bcrypt.hash(s.name.trim().toLowerCase().replace(/\s+/g, ' '), 10);
       StudentRepository.save({
@@ -159,6 +206,20 @@ export class AuthService {
       const resultData: any = {
         regNo: s.regNo,
         semester: 3
+      };
+
+      for (let i = 0; i < 8; i++) {
+        resultData[`subject${i+1}_ia`] = s.marks[i][0];
+        resultData[`subject${i+1}_e`] = s.marks[i][1];
+      }
+
+      ResultService.saveResult(resultData, email);
+    }
+
+    for (const s of secondSemResults) {
+      const resultData: any = {
+        regNo: s.regNo,
+        semester: 2
       };
 
       for (let i = 0; i < 8; i++) {

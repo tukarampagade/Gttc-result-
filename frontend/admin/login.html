@@ -34,17 +34,20 @@
                 </div>
                 <form id="adminLoginForm">
                     <div class="mb-4">
-                        <label class="form-label text-uppercase small fw-bold text-muted">Administrator Email</label>
+                        <label for="username" class="form-label text-uppercase small fw-bold text-muted">Administrator Email</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope"></i></span>
-                            <input type="email" class="form-control border-start-0 ps-0" id="username" placeholder="admin@gttc.gov.in" required>
+                            <input type="email" class="form-control border-start-0 ps-0" id="username" placeholder="admin@gttc.gov.in" required aria-required="true">
                         </div>
                     </div>
                     <div class="mb-5">
-                        <label class="form-label text-uppercase small fw-bold text-muted">Password</label>
+                        <label for="password" class="form-label text-uppercase small fw-bold text-muted">Password</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="bi bi-key"></i></span>
-                            <input type="password" class="form-control border-start-0 ps-0" id="password" placeholder="••••••••" required>
+                            <input type="password" class="form-control border-x-0 ps-0" id="password" placeholder="••••••••" required aria-required="true">
+                            <button class="btn btn-light border-start-0 border" type="button" id="togglePassword" aria-label="Toggle password visibility">
+                                <i class="bi bi-eye" id="toggleIcon"></i>
+                            </button>
                         </div>
                     </div>
                     <button type="submit" class="btn btn-dark w-100 py-3 fw-bold text-uppercase tracking-wide mb-4">

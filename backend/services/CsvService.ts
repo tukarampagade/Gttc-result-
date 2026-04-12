@@ -11,6 +11,10 @@ export class CsvService {
       trim: true
     });
 
+    if (!records || records.length === 0) {
+      throw new Error('The CSV file is empty or has no valid data rows.');
+    }
+
     const results = [];
 
     for (const record of records as any[]) {

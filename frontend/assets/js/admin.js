@@ -7,7 +7,7 @@ let statusPage = 1;
 let resultPage = 1;
 let auditPage = 1;
 let historyPage = 1;
-const itemsPerPage = 10;
+const itemsPerPage = 50;
 
 let studentSortCol = 'regNo';
 let studentSortDir = 'asc';
@@ -87,6 +87,9 @@ function initCharts() {
 }
 
 async function loadAnalytics() {
+    const cards = document.getElementById('analyticsCards');
+    if (cards) cards.innerHTML = '<div class="col-12 text-center py-4"><div class="spinner-border text-primary"></div></div>';
+    
     try {
         const res = await request('/admin/analytics');
         const a = res.data;
@@ -192,9 +195,13 @@ function showSection(section) {
 
 // Student Management
 async function loadStudents(page = 1) {
+    const tbody = document.getElementById('studentTableBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div> Loading students...</td></tr>';
+    
     try {
         const status = document.getElementById('studentStatusFilter')?.value || '';
-        const res = await request(`/admin/students?page=${page}&limit=${itemsPerPage}&status=${status}&sort=${studentSortCol}&order=${studentSortDir}`);
+        const search = document.getElementById('studentSearch')?.value || '';
+        const res = await request(`/admin/students?page=${page}&limit=${itemsPerPage}&status=${status}&search=${encodeURIComponent(search)}&sort=${studentSortCol}&order=${studentSortDir}`);
         const { data, pagination } = res.data;
         allStudents = data;
         studentPage = pagination.page;
@@ -228,26 +235,26 @@ function updateStudentSortIcons() {
     }
 }
 
+let searchTimeout;
 function filterStudents() {
-    loadStudents(1);
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        loadStudents(1);
+    }, 300);
 }
 
 function renderStudentTable(pagination) {
     const tbody = document.getElementById('studentTableBody');
-    const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
     const deptFilter = document.getElementById('deptFilter').value;
     
-    // Client-side search on the current page (or we could implement server-side search)
     const filtered = allStudents.filter(s => {
-        const matchesSearch = s.regNo.toLowerCase().includes(searchTerm) || 
-                            s.name.toLowerCase().includes(searchTerm);
         const matchesDept = !deptFilter || s.department === deptFilter;
-        return matchesSearch && matchesDept;
+        return matchesDept;
     });
 
     tbody.innerHTML = filtered.map(s => `
         <tr>
-            <td><input type="checkbox" class="student-checkbox form-check-input" value="${s.regNo}"></td>
+            <td><input type="checkbox" class="student-checkbox form-check-input" value="${s.regNo}" onclick="updateStudentSelection()"></td>
             <td><code class="fw-bold">${s.regNo}</code></td>
             <td>
                 <div class="fw-bold">${s.name}</div>
@@ -282,6 +289,20 @@ function renderStudentTable(pagination) {
 function toggleSelectAllStudents() {
     const isChecked = document.getElementById('selectAllStudents').checked;
     document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = isChecked);
+    updateStudentSelection();
+}
+
+function updateStudentSelection() {
+    const selected = document.querySelectorAll('.student-checkbox:checked');
+    const bulkActions = document.getElementById('studentBulkActions');
+    const countText = document.getElementById('selectedStudentsCount');
+    
+    if (selected.length > 0) {
+        bulkActions.style.setProperty('display', 'flex', 'important');
+        countText.innerText = `${selected.length} selected`;
+    } else {
+        bulkActions.style.setProperty('display', 'none', 'important');
+    }
 }
 
 async function bulkUpdateStudentStatus(status) {
@@ -312,10 +333,14 @@ async function bulkUpdateStudentStatus(status) {
 
 // Result Management
 async function loadResults(page = 1) {
+    const tbody = document.getElementById('resultTableBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div> Loading results...</td></tr>';
+    
     try {
         const semester = document.getElementById('resSemesterFilter')?.value || '';
         const status = document.getElementById('resStatusFilter')?.value || '';
-        const res = await request(`/admin/results?page=${page}&limit=${itemsPerPage}&semester=${semester}&status=${status}`);
+        const search = document.getElementById('resultSearch')?.value || '';
+        const res = await request(`/admin/results?page=${page}&limit=${itemsPerPage}&semester=${semester}&status=${status}&search=${encodeURIComponent(search)}`);
         const { data, pagination } = res.data;
         
         allResults = data;
@@ -395,26 +420,25 @@ function exportHistoryToCSV() {
     showToast('History exported successfully', 'success');
 }
 
+let resultSearchTimeout;
 function filterResults() {
-    loadResults(1);
+    clearTimeout(resultSearchTimeout);
+    resultSearchTimeout = setTimeout(() => {
+        loadResults(1);
+    }, 300);
 }
 
 function renderResultTable(pagination) {
     const tbody = document.getElementById('resultTableBody');
-    const searchTerm = document.getElementById('resultSearch').value.toLowerCase();
     
-    const filtered = allResults.filter(r => 
-        r.regNo.toLowerCase().includes(searchTerm) || 
-        (r.studentName && r.studentName.toLowerCase().includes(searchTerm))
-    );
-
     // Reset select all checkbox
     const selectAll = document.getElementById('selectAllResults');
     if (selectAll) selectAll.checked = false;
     updateResultSelection();
 
-    tbody.innerHTML = filtered.map(r => {
-        const p = (r.total / 960) * 100;
+    tbody.innerHTML = allResults.map(r => {
+        const maxPossible = r.semester == 2 ? 910 : 960;
+        const p = (r.total / maxPossible) * 100;
         let grade = 'F';
         if (p >= 90) grade = 'A+';
         else if (p >= 80) grade = 'A';
@@ -431,7 +455,12 @@ function renderResultTable(pagination) {
                 <td><code class="fw-bold">${r.regNo}</code></td>
                 <td><div class="fw-bold">${r.studentName || 'Unknown'}</div></td>
                 <td>${r.semester || 3}${getOrdinal(r.semester || 3)} Sem</td>
-                <td><span class="fw-bold">${r.total}</span>/960</td>
+                <td><span class="fw-bold">${r.total}</span>/${maxPossible}</td>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">#${r.rank || '-'}</span>
+                    </div>
+                </td>
                 <td><span class="badge bg-primary">${grade}</span></td>
                 <td><span class="badge badge-${r.result.toLowerCase()}">${r.result}</span></td>
                 <td>
@@ -444,6 +473,9 @@ function renderResultTable(pagination) {
                         </button>
                         <button class="btn btn-sm btn-light border" onclick="openEditResultModal('${r.regNo}', ${r.semester || 3})" title="Edit">
                             <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="downloadResultPDF('${r.regNo}', ${r.semester || 3})" title="Download PDF">
+                            <i class="bi bi-file-pdf"></i>
                         </button>
                     </div>
                 </td>
@@ -688,6 +720,32 @@ document.getElementById('confirmDeleteBtn')?.addEventListener('click', async () 
     }
 });
 
+function getSubjectsBySemester(semester) {
+    if (semester == 2) {
+        return [
+            { name: 'AS', code: '24AI21I', max: 120 },
+            { name: 'DS&Algorithm', code: '24AI22T', max: 120 },
+            { name: 'DE', code: '24AI23T', max: 120 },
+            { name: 'ECS', code: '24AI24P', max: 120 },
+            { name: 'DS&AI Lab', code: '24AI25P', max: 120 },
+            { name: 'DE Lab', code: '24AI26P', max: 120 },
+            { name: 'Engg. Desgin', code: '24AI27P', max: 120 },
+            { name: 'BK-II', code: '24AI17A', max: 70 }
+        ];
+    }
+    // Default to 3rd sem
+    return [
+        { name: 'EM for AI', code: '24AI31T', max: 120 },
+        { name: 'PY. Programming', code: '24AI32T', max: 120 },
+        { name: 'OOPS with C++', code: '24AI33T', max: 120 },
+        { name: 'Intro. to MC & ES', code: '24AI34T', max: 120 },
+        { name: 'C++ Lab', code: '24AI35P', max: 120 },
+        { name: 'PY. Programming Lab', code: '24AI36P', max: 120 },
+        { name: 'Microcontroller Lab', code: '24AI37P', max: 120 },
+        { name: 'DBMS', code: '24AI38P', max: 120 }
+    ];
+}
+
 async function showSubjectAnalysis(regNo, semester) {
     const content = document.getElementById('analysisContent');
     content.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
@@ -703,16 +761,13 @@ async function showSubjectAnalysis(regNo, semester) {
             return;
         }
 
-        const subjects = [
-            { name: 'EM for AI', code: '24AI31T', ia: r.subject1_ia, e: r.subject1_e, t: r.subject1_t },
-            { name: 'PY. Programming', code: '24AI32T', ia: r.subject2_ia, e: r.subject2_e, t: r.subject2_t },
-            { name: 'OOPS with C++', code: '24AI33T', ia: r.subject3_ia, e: r.subject3_e, t: r.subject3_t },
-            { name: 'Intro. to MC & ES', code: '24AI34T', ia: r.subject4_ia, e: r.subject4_e, t: r.subject4_t },
-            { name: 'C++ Lab', code: '24AI35P', ia: r.subject5_ia, e: r.subject5_e, t: r.subject5_t },
-            { name: 'PY. Programming Lab', code: '24AI36P', ia: r.subject6_ia, e: r.subject6_e, t: r.subject6_t },
-            { name: 'Microcontroller Lab', code: '24AI37P', ia: r.subject7_ia, e: r.subject7_e, t: r.subject7_t },
-            { name: 'DBMS', code: '24AI38P', ia: r.subject8_ia, e: r.subject8_e, t: r.subject8_t }
-        ];
+        const subjectsConfig = getSubjectsBySemester(r.semester);
+        const subjects = subjectsConfig.map((s, i) => ({
+            ...s,
+            ia: r[`subject${i+1}_ia`],
+            e: r[`subject${i+1}_e`],
+            t: r[`subject${i+1}_t`]
+        }));
 
         let html = `
             <div class="row g-4">
@@ -802,16 +857,13 @@ async function viewStudentResult(regNo, semester) {
             return;
         }
 
-        const subjects = [
-            { name: 'EM for AI', code: '24AI31T', ia: r.subject1_ia, e: r.subject1_e, marks: r.subject1_t, max: 120 },
-            { name: 'PY. Programming', code: '24AI32T', ia: r.subject2_ia, e: r.subject2_e, marks: r.subject2_t, max: 120 },
-            { name: 'OOPS with C++', code: '24AI33T', ia: r.subject3_ia, e: r.subject3_e, marks: r.subject3_t, max: 120 },
-            { name: 'Intro. to MC & ES', code: '24AI34T', ia: r.subject4_ia, e: r.subject4_e, marks: r.subject4_t, max: 120 },
-            { name: 'C++ Lab', code: '24AI35P', ia: r.subject5_ia, e: r.subject5_e, marks: r.subject5_t, max: 120 },
-            { name: 'PY. Programming Lab', code: '24AI36P', ia: r.subject6_ia, e: r.subject6_e, marks: r.subject6_t, max: 120 },
-            { name: 'Microcontroller Lab', code: '24AI37P', ia: r.subject7_ia, e: r.subject7_e, marks: r.subject7_t, max: 120 },
-            { name: 'DBMS', code: '24AI38P', ia: r.subject8_ia, e: r.subject8_e, marks: r.subject8_t, max: 120 }
-        ];
+        const subjectsConfig = getSubjectsBySemester(r.semester);
+        const subjects = subjectsConfig.map((s, i) => ({
+            ...s,
+            ia: r[`subject${i+1}_ia`],
+            e: r[`subject${i+1}_e`],
+            marks: r[`subject${i+1}_t`]
+        }));
 
         const getGrade = (marks, max) => {
             const p = (marks / max) * 100;
@@ -824,7 +876,8 @@ async function viewStudentResult(regNo, semester) {
             return { label: 'F', class: 'bg-danger-subtle text-danger' };
         };
 
-        const percentage = ((r.total / 960) * 100).toFixed(2);
+        const maxPossible = r.semester == 2 ? 910 : 960;
+        const percentage = ((r.total / maxPossible) * 100).toFixed(2);
         const statusClass = r.result === 'PASS' ? 'bg-success' : 'bg-danger';
 
         content.innerHTML = `
@@ -836,6 +889,10 @@ async function viewStudentResult(regNo, semester) {
                         <div class="text-muted small">Roll: <strong>${r.regNo}</strong> | Sem: <strong>${r.semester}${getOrdinal(r.semester)}</strong></div>
                     </div>
                     <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex gap-3 justify-content-md-end">
+                        <div class="text-center">
+                            <div class="h3 fw-bold text-info mb-0">#${r.rank || '-'}</div>
+                            <div class="text-muted x-small text-uppercase fw-bold">Rank</div>
+                        </div>
                         <div class="text-center">
                             <div class="h3 fw-bold text-primary mb-0">${r.total}</div>
                             <div class="text-muted x-small text-uppercase fw-bold">Total Marks</div>
@@ -850,6 +907,11 @@ async function viewStudentResult(regNo, semester) {
                         </div>
                     </div>
                 </div>
+                <div class="mt-3 text-end">
+                    <button class="btn btn-sm btn-primary" onclick="downloadResultPDF('${r.regNo}', ${r.semester})">
+                        <i class="bi bi-file-pdf me-1"></i> Download PDF
+                    </button>
+                </div>
             </div>
 
             <div class="table-responsive">
@@ -857,26 +919,40 @@ async function viewStudentResult(regNo, semester) {
                     <thead class="table-light">
                         <tr>
                             <th>Subject</th>
-                            <th class="text-center">IA</th>
-                            <th class="text-center">Exam</th>
-                            <th class="text-center">Total</th>
+                            <th class="text-center">IA <br><small class="text-muted">(Min 35)</small></th>
+                            <th class="text-center">Exam <br><small class="text-muted">(Min 25)</small></th>
+                            <th class="text-center">Total <br><small class="text-muted">(Min 60)</small></th>
                             <th class="text-center">Grade</th>
                             <th class="text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${subjects.map(s => {
+                        ${subjects.map((s, i) => {
                             const grade = getGrade(s.marks, s.max);
-                            const isPass = s.ia >= 35 && s.e >= 25 && s.marks >= 60;
+                            const isIaOnly = (r.semester == 2 && i == 7);
+                            const isPass = isIaOnly ? (s.ia >= 35) : (s.ia >= 35 && s.e >= 25 && s.marks >= 60);
+                            
                             return `
                                 <tr>
                                     <td>
                                         <div class="fw-medium">${s.name}</div>
                                         <code class="x-small text-muted">${s.code}</code>
                                     </td>
-                                    <td class="text-center">${s.ia}</td>
-                                    <td class="text-center">${s.e}</td>
-                                    <td class="text-center"><strong>${s.marks}</strong><span class="text-muted small">/${s.max}</span></td>
+                                    <td class="text-center">
+                                        <div class="${s.ia >= 35 ? 'text-success' : 'text-danger'} fw-bold">${s.ia}</div>
+                                        <div class="x-small text-muted">/70</div>
+                                    </td>
+                                    <td class="text-center">
+                                        ${isIaOnly ? 
+                                            '<span class="text-muted small">N/A</span>' : 
+                                            `<div class="${s.e >= 25 ? 'text-success' : 'text-danger'} fw-bold">${s.e}</div>
+                                             <div class="x-small text-muted">/50</div>`
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="${isPass ? 'text-success' : 'text-danger'} fw-bold">${s.marks}</div>
+                                        <div class="x-small text-muted">/${s.max}</div>
+                                    </td>
                                     <td class="text-center">
                                         <span class="badge rounded-pill ${grade.class}">${grade.label}</span>
                                     </td>
@@ -1252,15 +1328,33 @@ async function processUpload(file, statusElement) {
         const res = await response.json();
         if (response.ok) {
             const count = res.data.count !== undefined ? res.data.count : (res.data.length || 0);
-            statusElement.innerHTML = `<div class="alert alert-success">Success! Processed ${count} records.</div>`;
+            statusElement.innerHTML = `
+                <div class="alert alert-success d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                    <div>
+                        <strong>Success!</strong> Processed ${count} student records from <code>${file.name}</code>.
+                    </div>
+                </div>`;
             loadAnalytics();
-            showToast(`Successfully processed ${count} records from ${file.name}`, 'success');
+            showToast(`Successfully processed ${count} records`, 'success');
         } else {
-            throw new Error(res.message);
+            // Specific handling for common errors
+            let errorMsg = res.message || 'An unknown error occurred during processing.';
+            if (errorMsg.includes('No valid student records found')) {
+                errorMsg = `<strong>Format Error:</strong> ${errorMsg}<br><small class="text-muted">Tip: Check if the file is a standard provisional result sheet.</small>`;
+            }
+            throw new Error(errorMsg);
         }
     } catch (err) {
-        statusElement.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
-        showToast(err.message, 'danger');
+        statusElement.innerHTML = `
+            <div class="alert alert-danger d-flex align-items-start">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-5 mt-1"></i>
+                <div>
+                    <strong>Upload Failed</strong><br>
+                    <span class="small">${err.message}</span>
+                </div>
+            </div>`;
+        showToast('Processing failed. Check the status message for details.', 'danger');
     }
 }
 
@@ -1382,6 +1476,170 @@ function toggleSidebar() {
     const overlay = document.getElementById('sidebarOverlay');
     sidebar.classList.toggle('show');
     overlay.classList.toggle('show');
+}
+
+async function downloadResultPDF(regNo, semester) {
+    try {
+        const res = await request(`/admin/result/${regNo}?semester=${semester}`);
+        const r = res.data;
+        if (!r) return;
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        const subjectsConfig = getSubjectsBySemester(r.semester);
+        const maxPossible = r.semester == 2 ? 910 : 960;
+        const percentage = ((r.total / maxPossible) * 100).toFixed(2);
+        const rank = r.rank || '-';
+
+        // Helper for colors
+        const colors = {
+            primary: [15, 23, 42], // slate-900
+            secondary: [100, 116, 139], // slate-500
+            accent: [37, 99, 235], // blue-600
+            success: [5, 150, 105], // emerald-600
+            danger: [225, 29, 72] // rose-600
+        };
+
+        // Header Section
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(...colors.secondary);
+        doc.text('STUDENT DETAILS', 20, 25);
+
+        doc.setFontSize(28);
+        doc.setTextColor(...colors.primary);
+        const nameLines = doc.splitTextToSize(r.name.toUpperCase(), 170);
+        doc.text(nameLines, 20, 38);
+        
+        const nameHeight = nameLines.length * 10;
+        let currentY = 38 + nameHeight;
+
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...colors.primary);
+        doc.text(`Roll: `, 20, currentY);
+        doc.setFont("helvetica", "bold");
+        doc.text(`${r.regNo}`, 30, currentY);
+        
+        doc.setFont("helvetica", "normal");
+        doc.text(`Dept: `, 55, currentY);
+        doc.setFont("helvetica", "bold");
+        doc.text(`${r.department || 'Artificial Intelligence & Machine Learning'}`, 67, currentY);
+        
+        doc.setFont("helvetica", "normal");
+        doc.text(`Sem: `, 160, currentY);
+        doc.setFont("helvetica", "bold");
+        doc.text(`${r.semester}${getOrdinal(r.semester)}`, 172, currentY);
+
+        currentY += 15;
+
+        // Summary Box
+        doc.setDrawColor(226, 232, 240); // slate-200
+        doc.roundedRect(20, currentY, 170, 35, 5, 5);
+        
+        doc.setFontSize(24);
+        doc.setTextColor(...colors.primary);
+        doc.text(`${percentage}%`, 35, currentY + 18);
+        doc.setFontSize(9);
+        doc.setTextColor(...colors.secondary);
+        doc.text('PERCENTAGE', 35, currentY + 25);
+
+        doc.setFontSize(10);
+        doc.setTextColor(r.result === 'PASS' ? colors.success[0] : colors.danger[0], r.result === 'PASS' ? colors.success[1] : colors.danger[1], r.result === 'PASS' ? colors.success[2] : colors.danger[2]);
+        doc.text(`PASSED`, 100, currentY + 15);
+        
+        doc.setFontSize(12);
+        doc.setTextColor(...colors.primary);
+        doc.text(`Rank: #${r.rank || '-'}`, 100, currentY + 25);
+
+        currentY += 50;
+
+        // Stats Row
+        const stats = [
+            { label: 'TOTAL SUBJECTS', value: subjectsConfig.length },
+            { label: 'PASSED', value: subjectsConfig.filter((s, i) => r[`subject${i+1}_t`] >= 60).length },
+            { label: 'FAILED', value: subjectsConfig.filter((s, i) => r[`subject${i+1}_t`] < 60).length },
+            { label: 'TOTAL MARKS', value: `${r.total}/${maxPossible}` }
+        ];
+
+        stats.forEach((stat, i) => {
+            const x = 20 + (i * 42.5);
+            doc.setDrawColor(241, 245, 249); // slate-100
+            doc.roundedRect(x, currentY, 40, 25, 3, 3);
+            doc.setFontSize(14);
+            doc.setTextColor(...colors.primary);
+            doc.text(`${stat.value}`, x + 20, currentY + 12, { align: 'center' });
+            doc.setFontSize(7);
+            doc.setTextColor(...colors.secondary);
+            doc.text(stat.label, x + 20, currentY + 19, { align: 'center' });
+        });
+
+        currentY += 40;
+
+        // Table
+        doc.setFontSize(14);
+        doc.setTextColor(...colors.primary);
+        doc.text('Subject-wise Results', 20, currentY);
+
+        const tableData = subjectsConfig.map((s, i) => {
+            const marks = r[`subject${i+1}_t`];
+            const p = (marks / s.max) * 100;
+            let grade = 'F';
+            if (p >= 90) grade = 'A+';
+            else if (p >= 80) grade = 'A';
+            else if (p >= 70) grade = 'B+';
+            else if (p >= 60) grade = 'B';
+            
+            const isPass = (r.semester == 2 && i == 7) ? (r[`subject${i+1}_ia`] >= 35) : (r[`subject${i+1}_ia`] >= 35 && r[`subject${i+1}_e`] >= 25 && marks >= 60);
+
+            return [
+                i + 1,
+                s.name,
+                s.code,
+                r[`subject${i+1}_ia`],
+                r[`subject${i+1}_e`],
+                `${marks} /${s.max}`,
+                grade,
+                isPass ? 'PASS' : 'FAIL'
+            ];
+        });
+
+        doc.autoTable({
+            startY: currentY + 8,
+            head: [['#', 'SUBJECT', 'CODE', 'IA (Min 35)', 'EXAM (Min 25)', 'TOTAL (Min 60)', 'GRA', 'STATUS']],
+            body: tableData,
+            theme: 'plain',
+            headStyles: { 
+                fillColor: [248, 250, 252], 
+                textColor: colors.secondary,
+                fontSize: 8,
+                fontStyle: 'bold'
+            },
+            bodyStyles: { 
+                fontSize: 9,
+                textColor: colors.primary
+            },
+            columnStyles: {
+                0: { cellWidth: 10 },
+                1: { fontStyle: 'bold' },
+                5: { fontStyle: 'bold' },
+                6: { fontStyle: 'bold' }
+            },
+            didDrawPage: function (data) {
+                // Footer
+                doc.setFontSize(8);
+                doc.setTextColor(...colors.secondary);
+                doc.text('SYSTEM GENERATED PROVISIONAL SHEET', 20, doc.internal.pageSize.height - 20);
+                doc.text(`ISSUED ON: ${new Date().toLocaleDateString()}`, 20, doc.internal.pageSize.height - 15);
+            }
+        });
+
+        doc.save(`Result_${r.regNo}_Sem${r.semester}.pdf`);
+        showToast('PDF downloaded successfully', 'success');
+    } catch (err) {
+        showToast('Error generating PDF: ' + err.message, 'danger');
+    }
 }
 
 async function getGeminiInsight(regNo) {

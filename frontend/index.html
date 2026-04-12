@@ -62,16 +62,16 @@
                 </div>
                 <form id="loginForm">
                     <div class="mb-4">
-                        <label class="form-label fw-medium text-dark">Roll / Registration Number</label>
-                        <input type="text" class="form-control py-2 px-3" id="username" placeholder="e.g., 8080142" required>
+                        <label for="username" class="form-label fw-medium text-dark">Roll / Registration Number</label>
+                        <input type="text" class="form-control py-2 px-3" id="username" placeholder="e.g., 8080142" required aria-required="true">
                     </div>
                     <div class="mb-4">
-                        <label class="form-label fw-medium text-dark">Full Name</label>
-                        <input type="password" class="form-control py-2 px-3" id="password" placeholder="Enter your full name" required>
+                        <label for="password" class="form-label fw-medium text-dark">Full Name</label>
+                        <input type="password" class="form-control py-2 px-3" id="password" placeholder="Enter your full name" required aria-required="true">
                     </div>
                     <div class="mb-5">
-                        <label class="form-label fw-medium text-dark">Semester</label>
-                        <select class="form-select py-2 px-3" id="semester">
+                        <label for="semester" class="form-label fw-medium text-dark">Semester</label>
+                        <select class="form-select py-2 px-3" id="semester" aria-label="Select Semester">
                             <option selected>Any Semester</option>
                             <option value="1st">1st Semester</option>
                             <option value="2nd">2nd Semester</option>

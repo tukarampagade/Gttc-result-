@@ -253,8 +253,8 @@ function renderStudentTable(pagination) {
     });
 
     tbody.innerHTML = filtered.map(s => `
-        <tr>
-            <td><input type="checkbox" class="student-checkbox form-check-input" value="${s.regNo}" onclick="updateStudentSelection()"></td>
+        <tr class="student-row" onclick="openStudentDetailModal('${s.regNo}')" style="cursor: pointer;">
+            <td onclick="event.stopPropagation()"><input type="checkbox" class="student-checkbox form-check-input" value="${s.regNo}" onclick="updateStudentSelection()"></td>
             <td><code class="fw-bold">${s.regNo}</code></td>
             <td>
                 <div class="fw-bold">${s.name}</div>
@@ -264,7 +264,7 @@ function renderStudentTable(pagination) {
             <td>${s.semester || '-'}</td>
             <td>${s.dob || '-'}</td>
             <td><span class="badge ${s.status === 'Inactive' ? 'badge-fail' : 'badge-active'}">${s.status || 'Active'}</span></td>
-            <td>
+            <td onclick="event.stopPropagation()">
                 <div class="d-flex gap-2">
                     <button class="btn btn-sm btn-outline-primary" onclick="getGeminiInsight('${s.regNo}')" title="AI Analysis">
                         <i class="bi bi-sparkles"></i>
@@ -283,7 +283,61 @@ function renderStudentTable(pagination) {
     renderPagination('studentPagination', pagination.total, pagination.page, (p) => {
         loadStudents(p);
     });
-    document.getElementById('selectAllStudents').checked = false;
+    
+    const selectAll = document.getElementById('selectAllStudents');
+    if (selectAll) selectAll.checked = false;
+    updateStudentSelection();
+}
+
+function openStudentDetailModal(regNo) {
+    const student = allStudents.find(s => s.regNo === regNo);
+    if (!student) return;
+
+    const content = document.getElementById('studentDetailContent');
+    content.innerHTML = `
+        <div class="row g-4">
+            <div class="col-md-4 text-center border-end">
+                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 100px; height: 100px;">
+                    <i class="bi bi-person-fill text-secondary" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="fw-bold mb-1">${student.name}</h5>
+                <span class="badge ${student.status === 'Inactive' ? 'badge-fail' : 'badge-active'} mb-3">${student.status || 'Active'}</span>
+            </div>
+            <div class="col-md-8">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <small class="text-muted d-block">Registration Number</small>
+                        <span class="fw-bold">${student.regNo}</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Email Address</small>
+                        <span class="fw-bold">${student.email || '-'}</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Department</small>
+                        <span class="fw-bold">${student.department || '-'}</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Current Semester</small>
+                        <span class="fw-bold">${student.semester || '-'}${getOrdinal(student.semester || 0)} Sem</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Date of Birth</small>
+                        <span class="fw-bold">${student.dob || '-'}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const analyzeBtn = document.getElementById('analyzeStudentBtn');
+    analyzeBtn.onclick = () => {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('studentDetailModal'));
+        modal.hide();
+        getGeminiInsight(regNo);
+    };
+
+    new bootstrap.Modal(document.getElementById('studentDetailModal')).show();
 }
 
 function toggleSelectAllStudents() {
@@ -1098,12 +1152,13 @@ function renderAuditTable(pagination) {
 async function loadResultHistory() {
     const tbody = document.getElementById('historyTableBody');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border spinner-border-sm text-primary"></div> Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div> Loading history...</td></tr>';
     
     try {
         const res = await request('/admin/audit-logs');
         // Filter for result related actions
-        allHistory = res.data.filter(log => 
+        const logs = res.data.data || [];
+        allHistory = logs.filter(log => 
             log.action === 'ADD_RESULT' || 
             log.action === 'UPDATE_RESULT' || 
             log.action === 'RESULT_VIEW'
@@ -1114,7 +1169,7 @@ async function loadResultHistory() {
         
         renderHistoryTable();
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Error: ${err.message}</td></tr>`;
     }
 }
 

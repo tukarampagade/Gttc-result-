@@ -48,8 +48,7 @@ While the app uses SQLite locally, **MySQL** is better for production.
    - Click **"New Project"** -> **"GitHub Repo"** -> Select your repository.
    - Go to **"Variables"** and add:
      - `MYSQL_URL`: (Railway provides this automatically if you linked the services)
-     - `JWT_SECRET`: `your_random_secret_key_here` (Make it long and complex)
-     - `GEMINI_API_KEY`: `your_google_gemini_api_key` (Get it from Google AI Studio)
+     - `JWT_SECRET`: `your_random_secret_key_here` (Make it long and complex 
      - `NODE_ENV`: `production`
      - `PORT`: `3000`
    - Go to **"Settings"** -> **"Public Networking"** -> Click **"Generate Domain"**.
